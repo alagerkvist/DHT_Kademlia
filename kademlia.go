@@ -4,7 +4,7 @@ type Kademlia struct {
 }
 
 func (kademlia *Kademlia) LookupContact(target *Contact) {
-	// TODO
+	// TODO DO THAT FAST
 }
 
 func (kademlia *Kademlia) LookupData(hash string) {
