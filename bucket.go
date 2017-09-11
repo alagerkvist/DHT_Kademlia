@@ -9,11 +9,13 @@ type bucket struct {
 }
 
 func newBucket() *bucket {
+	//constructor list of lists
 	bucket := &bucket{}
 	bucket.list = list.New()
 	return bucket
 }
 
+// AddContact is a method of bucket, params contact and it is void
 func (bucket *bucket) AddContact(contact Contact) {
 	//create a element variable
 	var element *list.Element
@@ -41,18 +43,24 @@ func (bucket *bucket) AddContact(contact Contact) {
 	}
 }
 
+// GetContactAndCalcDistance is a method of bucket, params targer kademliaID and returns an Array of contacts
 func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
+	//create an array of contacts
 	var contacts []Contact
 
+	//this is to irerate over the list os the bucket.
 	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
+		//now make operations over the contacts  REVIEW
 		contact := elt.Value.(Contact)
 		contact.CalcDistance(target)
 		contacts = append(contacts, contact)
 	}
 
+	//return the list of contacts
 	return contacts
 }
 
+//returns the len of the bucket.
 func (bucket *bucket) Len() int {
 	return bucket.list.Len()
 }
