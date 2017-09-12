@@ -58,6 +58,20 @@ func (kademliaID KademliaID) Equals(otherKademliaID *KademliaID) bool {
 }
 
 //REVIEW
+//CalcDistance is a method of KAdemliaId
+//params target is a KAdemliaID
+//returns KAdemliaID
+// ^ is a go operator (https://www.tutorialspoint.com/go/go_operators.htm)
+//
+// |---|---|-----|
+// | p | q | p^q |
+// |---|---|-----|
+// | 0 | 0 |  0  |
+// | 0 | 1 |  1  |
+// | 1 | 1 |  0  |
+// | 1 | 0 |  1  |
+// |---|---|-----|
+
 func (kademliaID KademliaID) CalcDistance(target *KademliaID) *KademliaID {
 	result := KademliaID{}
 	for i := 0; i < IDLength; i++ {
