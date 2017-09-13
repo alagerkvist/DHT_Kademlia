@@ -11,4 +11,6 @@ message ProtocolPackage{
 		FINDVALUE = 3;
 	}
 	required MessageSent messageSent = 4;
+	optional bytes findID = 5;
+	optional bytes findValue = 6;
 }
