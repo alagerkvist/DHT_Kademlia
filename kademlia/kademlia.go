@@ -6,6 +6,13 @@ type Kademlia struct {
 //LookupContact is a method of KAdemlia to locate some Node
 //PArams target: it is the finded contact
 func (kademlia *Kademlia) LookupContact(target *Contact) {
+	//pick alpha nodes from the closest bucket
+	//send FIND_NODE to them
+	//WARNING bucket and find replies could be augmented with RTT estimates ---> ?
+
+	//Recursively send back to the next closest one
+	//If no respond, don't take into account
+
 	// TODO Testing ssh
 }
 
