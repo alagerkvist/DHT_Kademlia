@@ -1,0 +1,16 @@
+package kademlia;
+
+message ProtocolPackage{
+	required bytes clientID = 1;
+	required string ip = 2;
+	required int32 listenPort = 3;
+	enum MessageSent{
+		PING = 0;
+		STORE = 1;
+		FINDNODE = 2;
+		FINDVALUE = 3;
+	}
+	required MessageSent messageSent = 4;
+	optional bytes findID = 5;
+	optional bytes findValue = 6;
+}
