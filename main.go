@@ -2,20 +2,46 @@ package main
 
 import (
 	"./kademlia"
-	"time"
+	//"time"
 	"net"
 	"fmt"
 	"bufio"
+	"github.com/golang/protobuf/proto"
+	"log"
 )
 
 func main() {
-	kademlia.Listen("127.0.0.1", 8080);
+	//kademlia.Listen("127.0.0.1", 8080);
+	testWhat := kademlia.ProtocolPackage_PING
+	//p := &testWhat
+	testProto := &kademlia.ProtocolPackage{
+		ClientID: []byte("String"),
+		Ip: proto.String("localhost"),
+		ListenPort: proto.Int32(1234),
+		MessageSent: &testWhat,
+	}
 
+	data, err := proto.Marshal(testProto)
+	if err != nil {
+		log.Fatal("marshaling error: ", err)
+	}
+	newTest := &kademlia.ProtocolPackage{}
+	err = proto.Unmarshal(data, newTest)
+	if err != nil {
+		log.Fatal("unmarshaling error: ", err)
+	}
+	// Now test and newTest contain the same data.
+	if testProto.GetIp() != newTest.GetIp() {
+		log.Fatalf("data mismatch %q != %q", testProto.GetIp(), newTest.GetIp())
+	}
+
+	log.Printf("Unmarshalled to: %+v", newTest)
+/*
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()
 	}
-
+*/
 }
 
 func SendPingMessageFake () {
