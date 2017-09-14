@@ -73,6 +73,7 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	//find the next one to check
 	for i:=0 ; i < bucketSize ; i++{
 		if !safeNodesCheck.nodesToCheck[i].alreadyChecked {
+			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
 			network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
 			safeNodesCheck.mux.Unlock()
 			var newContacts ContactCandidates = network.getResponse()
