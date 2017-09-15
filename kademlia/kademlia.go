@@ -14,24 +14,23 @@ type NodeToCheck struct{
 }
 
 type SafeNodesCheck struct {
-	nodesToCheck [bucketSize]NodeToCheck
+	nodesToCheck []NodeToCheck
 	mux sync.Mutex
 }
 
-//LookupContact is a method of KAdemlia to locate some Node
-//PArams target: it is the finded contact
+//LookupContact is a method of Kademlia to locate some Node
+//Params target: it is the finded contact
 func (kademlia *Kademlia) LookupContact(target *Contact) {
 	//Creation of the shared array
-	var safeNodesTocheck = SafeNodesCheck{}
-	result := false
-	var nodesToCheck [bucketSize]NodeToCheck
+	var safeNodesTocheck = SafeNodesCheck{nodesToCheck: make([]NodeToCheck, bucketSize)}
+	var result bool
 	nbRunningThreads := 0
 	network := Network{}
 
-	//Fulfill this array with the k firt nodes
+	//Fulfill this array with at most the k nodes from buckets
 	var firstContacts []Contact = kademlia.routintTable.FindClosestContacts(target.ID, bucketSize)
-	for i := 0; i < len(firstContacts) ; i++ {
-		nodesToCheck[i] = NodeToCheck{&firstContacts[i], false}
+	for i:=0 ; i<len(firstContacts) ; i++ {
+		safeNodesTocheck.nodesToCheck[i] = NodeToCheck{&firstContacts[i], false}
 	}
 
 	//Start sending rpc nodes ->wait method
@@ -40,16 +39,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 			nbRunningThreads++
 			go safeNodesTocheck.sendFindNode(&nbRunningThreads, &network, &result)
 		}
-
-		if(!result){
-			break
-		}
-
 	}
-
-	//Recursively send back to the next closest one
-	//If no respond, don't take into account
-
 }
 
 //LookupContact is a method of KAdemlia to locate some Data
@@ -73,18 +63,21 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	//find the next one to check
 	for i:=0 ; i < bucketSize ; i++{
 		if !safeNodesCheck.nodesToCheck[i].alreadyChecked {
+			//The node will not be taken into account by the other threads.
 			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
-			network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
 			safeNodesCheck.mux.Unlock()
+			network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
 			var newContacts ContactCandidates = network.getResponse()
 
 			//insertion of the new one
 			safeNodesCheck.mux.Lock()
-			for i:=0 ; i < len(newContacts.contacts) ; i++{
+			for i:=0 ; i<len(newContacts.contacts) ; i++{
 				for j:=0 ; j<bucketSize ; j++{
 					if newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact) &&
 											!newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID) {
 
+						//Shift value of the array and insert the new one
+						copy(safeNodesCheck.nodesToCheck[j+1:], safeNodesCheck.nodesToCheck[j: len(safeNodesCheck.nodesToCheck) - 1])
 						safeNodesCheck.nodesToCheck[j].contact = &(newContacts.contacts[i])
 						safeNodesCheck.nodesToCheck[j].alreadyChecked = false
 					}
@@ -93,10 +86,12 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 			safeNodesCheck.mux.Unlock()
 			*nbRunningThreads--
 			*result =  true
+			return
 		}
 	}
 
 	safeNodesCheck.mux.Unlock()
 	*nbRunningThreads--
 	*result = false
+	return
 }
