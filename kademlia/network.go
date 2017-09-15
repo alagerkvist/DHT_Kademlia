@@ -6,9 +6,14 @@ import (
 	"bufio"
 	//"log"
 	//"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto"
+	"log"
 )
 
 type Network struct {
+	ip string
+	port int
+
 }
 
 
@@ -58,6 +63,52 @@ func unmarshallData(data int) {
 	//if err != nil {
 	//	log.Fatal("unmarshaling error: ", err)
 	//}
+}
+
+
+func Sender (marshalledObject []byte, ip string, port int) (*ProtocolPackage){
+
+	p :=  make([]byte, 2048)
+	ipPort := ip+":"+string(port)
+	conn, err := net.DialTimeout("udp", ipPort, 100)
+	// //net.Dial("udp", "127.0.0.1:8080")
+
+	if err != nil {
+		fmt.Printf("Some error %v", err)
+		return
+	}
+	fmt.Fprintf(conn, string(marshalledObject))
+	_, err = bufio.NewReader(conn).Read(p)
+	if err == nil {
+		fmt.Printf("%s\n", p)
+		newTest := &ProtocolPackage{}
+		err = proto.Unmarshal(p, newTest)
+		if err != nil {
+			log.Fatal("unmarshaling error: ", err)
+		}
+
+		log.Printf("Unmarshalled to: %+v", newTest)
+		conn.Close()
+		return newTest
+	} else {
+		fmt.Printf("Some error %v\n", err)
+	}
+	conn.Close()
+
+
+	/*testingRep := make([]*ProtocolPackage_ContactInfo, 0)
+	//testingRep := [3]kademlia.ProtocolPackage_ContactInfo{}
+	t := ProtocolPackage_ContactInfo{
+		ContactID: []byte("Client!!!!!"),
+		Address: proto.String("localhost"),
+		Distance: []byte("FAR!"),
+	}
+*/
+	//testingRep = append(testingRep, &t)
+
+
+
+	return unmarshalledObject;
 }
 
 func proccessReceivedMessage () {

@@ -33,6 +33,7 @@ func main() {
 	testingRep = append(testingRep, &tx)
 	testProto := &kademlia.ProtocolPackage{
 		ClientID: []byte("String"),
+
 		Ip: proto.String("localhost"),
 		ListenPort: proto.Int32(1234),
 		MessageSent: &typeOfMessage,
@@ -49,6 +50,8 @@ func main() {
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
+
+
 	newTest := &kademlia.ProtocolPackage{}
 	err = proto.Unmarshal(data, newTest)
 	if err != nil {
@@ -60,17 +63,14 @@ func main() {
 	}
 
 	log.Printf("Unmarshalled to: %+v", newTest)
-<<<<<<< HEAD
 
-=======
-	for i := 0; i < len(newTest.ContactsKNearest); i++{
-		log.Print("ClientID: ",string(newTest.ContactsKNearest[i].ContactID[:]))
-		log.Print("Address: ",*newTest.ContactsKNearest[i].Address)
-		log.Print("Distance: ",string(newTest.ContactsKNearest[i].Distance[:]))
+	for i := 0; i < len(newTest.ContactsKNearest); i++ {
+		log.Print("ClientID: ", string(newTest.ContactsKNearest[i].ContactID[:]))
+		log.Print("Address: ", *newTest.ContactsKNearest[i].Address)
+		log.Print("Distance: ", string(newTest.ContactsKNearest[i].Distance[:]))
 
 	}
-	/*
->>>>>>> 795324c5c9f3e19d47951680ac606405fbb8d7c4
+
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()
