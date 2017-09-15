@@ -24,12 +24,12 @@ func main() {
 
 	testingRep = append(testingRep, &t)
 
-	t = kademlia.ProtocolPackage_ContactInfo{
+	tx := kademlia.ProtocolPackage_ContactInfo{
 		ContactID: []byte("Client11"),
 		Address: proto.String("localhost1"),
 		Distance: []byte("FAR1"),
 	}
-	testingRep = append(testingRep, &t)
+	testingRep = append(testingRep, &tx)
 	testProto := &kademlia.ProtocolPackage{
 		ClientID: []byte("String"),
 		Ip: proto.String("localhost"),
@@ -42,7 +42,6 @@ func main() {
 		//ContactsKNearest: []byte("Client:1234 ip:222"),
 		//Then we can add both findID and findValue, they are optional
 	}
-
 
 
 	data, err := proto.Marshal(testProto)
@@ -60,7 +59,13 @@ func main() {
 	}
 
 	log.Printf("Unmarshalled to: %+v", newTest)
-/*
+	for i := 0; i < len(newTest.ContactsKNearest); i++{
+		log.Print("ClientID: ",string(newTest.ContactsKNearest[i].ContactID[:]))
+		log.Print("Address: ",*newTest.ContactsKNearest[i].Address)
+		log.Print("Distance: ",string(newTest.ContactsKNearest[i].Distance[:]))
+
+	}
+	/*
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()
