@@ -1,5 +1,6 @@
 package kademlia;
 
+
 message ProtocolPackage{
 	required bytes clientID = 1;
 	required string ip = 2;
@@ -14,12 +15,12 @@ message ProtocolPackage{
 	required MessageSent messageSent = 4;
 	optional bytes findID = 5;
 	optional bytes findValue = 6;
-	/*
+
 	message ContactInfo{
 		optional bytes contactID = 1;
 		optional string address = 2;
 		optional bytes distance = 3;
 	}
-	*/
-	repeated bytes contactsKNearest = 7;
+
+	repeated ContactInfo contactsKNearest = 7;
 }
