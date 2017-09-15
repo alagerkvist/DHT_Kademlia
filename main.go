@@ -13,14 +13,37 @@ import (
 
 func main() {
 	//kademlia.Listen("127.0.0.1", 8080);
-	testWhat := kademlia.ProtocolPackage_PING
-	//p := &testWhat
+	typeOfMessage := kademlia.ProtocolPackage_PING
+
+	testingRep := make([]*kademlia.ProtocolPackage_ContactInfo, 0)
+	//testingRep := [3]kademlia.ProtocolPackage_ContactInfo{}
+	t := kademlia.ProtocolPackage_ContactInfo{
+		ContactID: []byte("Client!!!!!"),
+		Address: proto.String("localhost"),
+		Distance: []byte("FAR!"),
+	}
+
+	testingRep = append(testingRep, &t)
+
+	tx := kademlia.ProtocolPackage_ContactInfo{
+		ContactID: []byte("Client11"),
+		Address: proto.String("localhost1"),
+		Distance: []byte("FAR1"),
+	}
+	testingRep = append(testingRep, &tx)
 	testProto := &kademlia.ProtocolPackage{
 		ClientID: []byte("String"),
 		Ip: proto.String("localhost"),
 		ListenPort: proto.Int32(1234),
-		MessageSent: &testWhat,
+		MessageSent: &typeOfMessage,
+		ContactsKNearest: testingRep,
+
+		//ContactsKNearest: testingRep,
+		//ContactsKNearest: []byte("Client:123 ip:111"),
+		//ContactsKNearest: []byte("Client:1234 ip:222"),
+		//Then we can add both findID and findValue, they are optional
 	}
+
 
 	data, err := proto.Marshal(testProto)
 	if err != nil {
@@ -37,7 +60,17 @@ func main() {
 	}
 
 	log.Printf("Unmarshalled to: %+v", newTest)
+<<<<<<< HEAD
 
+=======
+	for i := 0; i < len(newTest.ContactsKNearest); i++{
+		log.Print("ClientID: ",string(newTest.ContactsKNearest[i].ContactID[:]))
+		log.Print("Address: ",*newTest.ContactsKNearest[i].Address)
+		log.Print("Distance: ",string(newTest.ContactsKNearest[i].Distance[:]))
+
+	}
+	/*
+>>>>>>> 795324c5c9f3e19d47951680ac606405fbb8d7c4
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()
