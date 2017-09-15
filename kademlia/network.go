@@ -4,6 +4,8 @@ import (
 	"net"
 	"fmt"
 	"bufio"
+	//"log"
+	//"github.com/golang/protobuf/proto"
 )
 
 type Network struct {
@@ -36,16 +38,46 @@ func Listen(ip string, port int) {
 		return
 	}
 	for {
+		//data,remoteaddr,err := ser.ReadFromUDP(p)
 		_,remoteaddr,err := ser.ReadFromUDP(p)
 		fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
 		if err !=  nil {
 			fmt.Printf("Some error B  %v", err)
 			continue
 		}
-		go sendResponse(ser, remoteaddr)
+		//go unmarshallData(data)
+		//go sendResponse(ser, remoteaddr)
 	}
 
 	//unserialize
+}
+
+func unmarshallData(data int) {
+	//newTest := &ProtocolPackage{}
+	//err = proto.Unmarshal(data, newTest)
+	//if err != nil {
+	//	log.Fatal("unmarshaling error: ", err)
+	//}
+}
+
+func proccessReceivedMessage () {
+
+}
+
+func proccessPong(){
+
+}
+
+func processFindConctactMessage()  {
+
+}
+
+func SendFindDataMessage()  {
+
+}
+
+func SendStoreMessage()  {
+
 }
 
 func (network *Network) SendPingMessage(contact *Contact) {
@@ -53,6 +85,7 @@ func (network *Network) SendPingMessage(contact *Contact) {
 
 	p :=  make([]byte, 2048)
 	conn, err := net.Dial("udp", "127.0.0.1:1234")
+
 	if err != nil {
 		fmt.Printf("Some error %v", err)
 		return

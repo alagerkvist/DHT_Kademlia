@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"github.com/golang/protobuf/proto"
 	"log"
+	"time"
 )
 
 func main() {
@@ -36,18 +37,20 @@ func main() {
 	}
 
 	log.Printf("Unmarshalled to: %+v", newTest)
-/*
+
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()
 	}
-*/
+
 }
 
 func SendPingMessageFake () {
 	// TODO
 	p :=  make([]byte, 2048)
-	conn, err := net.Dial("udp", "127.0.0.1:8080")
+	conn, err := net.DialTimeout("udp", "127.0.0.1:1234", 100)
+	// //net.Dial("udp", "127.0.0.1:8080")
+
 	if err != nil {
 		fmt.Printf("Some error %v", err)
 		return
