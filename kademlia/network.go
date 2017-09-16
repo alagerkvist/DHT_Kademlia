@@ -65,8 +65,46 @@ func unmarshallData(data int) {
 	//}
 }
 
+func (networkInfo *Network) marshalObject(operation string, myKademliaID KademliaID){
+	var typeOfMessage ProtocolPackage
+	var kNearestNode ProtocolPackage_ContactInfo
 
-func Sender (marshalledObject []byte, ip string, port int) (*ProtocolPackage){
+
+	switch operation {
+	//Maybe it would be easier to do a sep. func for each induvidal case
+	case "ping":
+		typeOfMessage = ProtocolPackage_PING
+	case "store":
+		typeOfMessage = ProtocolPackage_STORE
+	case "node":
+		typeOfMessage = ProtocolPackage_FINDNODE
+	default:
+		typeOfMessage = ProtocolPackage_FINDVALUE
+
+	}
+
+	marshalPackage := &ProtocolPackage{
+		ClientID: myKademliaID,
+		Ip: proto.String(networkInfo.ip),
+		ListenPort: proto.Int32(networkInfo.port),
+		MessageSent: &typeOfMessage,
+		ContactsKNearest: kNearestNode,
+
+	}
+
+
+	data, err := proto.Marshal(marshalPackage)
+	if err != nil{
+		log.Fatal("Marshal went wrong")
+	}
+
+	Sender(data, "localhost", 123) //Here we need to specify which node ip and port to send to
+
+
+}
+
+
+func Sender (marshaledObject []byte, ip string, port int) (*ProtocolPackage){
 
 	p :=  make([]byte, 2048)
 	ipPort := ip+":"+string(port)
@@ -75,9 +113,9 @@ func Sender (marshalledObject []byte, ip string, port int) (*ProtocolPackage){
 
 	if err != nil {
 		fmt.Printf("Some error %v", err)
-		return
+		return nil
 	}
-	fmt.Fprintf(conn, string(marshalledObject))
+	fmt.Fprintf(conn, string(marshaledObject))
 	_, err = bufio.NewReader(conn).Read(p)
 	if err == nil {
 		fmt.Printf("%s\n", p)
@@ -105,10 +143,7 @@ func Sender (marshalledObject []byte, ip string, port int) (*ProtocolPackage){
 	}
 */
 	//testingRep = append(testingRep, &t)
-
-
-
-	return unmarshalledObject;
+	return nil
 }
 
 func proccessReceivedMessage () {
