@@ -44,11 +44,41 @@ func Listen(ip string, port int) {
 	for {
 		//data,remoteaddr,err := ser.ReadFromUDP(p)
 		_,remoteaddr,err := ser.ReadFromUDP(p)
+
+		unMarshalMessage := &ProtocolPackage{}
+		err = proto.Unmarshal(p, unMarshalMessage)
+		if err != nil {
+			log.Fatal("unmarshaling error: ", err)
+		}
+
+		switch unMarshalMessage.GetMessageSent() {
+		case ProtocolPackage_PING:
+			fmt.Printf("Ping")
+			processPing(unMarshalMessage, remoteaddr)
+			break;
+		case ProtocolPackage_STORE:
+			//TODO process Store
+			fmt.Printf("store")
+			break;
+		case ProtocolPackage_FINDNODE:
+			processFindConctactMessage(unMarshalMessage)
+			fmt.Printf("find node")
+			break;
+		case ProtocolPackage_FINDVALUE:
+			//TODO process FindValue
+			fmt.Printf("find value")
+			break;
+
+		}
+
+
+		/*
+		//_,remoteaddr,err := ser.ReadFromUDP(p)
 		fmt.Printf("Read a message from %v %s \n", remoteaddr, p)
 		if err !=  nil {
 			fmt.Printf("Some error B  %v", err)
 			continue
-		}
+		}*/
 		//go unmarshallData(data)
 		//go sendResponse(ser, remoteaddr)
 	}
@@ -135,16 +165,22 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 	return nil
 }
 
-func proccessReceivedMessage () {
+func processReceivedMessage () {
 
 }
 
-func proccessPong(){
-
+func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr string){
+	fmt.Print("Ping procesor")
+	fmt.Print(protocolPackage)
+	pongPacket := &ProtocolPackage{
+		//ClientID: net
+	}
+	network.Sender("Pongpaket", remoteaddr)
 }
 
-func processFindConctactMessage()  {
-
+func processFindConctactMessage(protocolPackage *ProtocolPackage)  {
+	fmt.Print("processFindConctactMessage procesor")
+	fmt.Print(protocolPackage)
 }
 
 func SendFindDataMessage()  {
