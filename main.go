@@ -13,6 +13,8 @@ import (
 
 func main() {
 	kademlia.Listen("127.0.0.1", 8080);
+
+
 	/*
 	typeOfMessage := kademlia.ProtocolPackage_PING
 
@@ -78,6 +80,8 @@ func main() {
 	}
 
 }
+
+
 
 func SendPingMessageFake () {
 	// TODO
