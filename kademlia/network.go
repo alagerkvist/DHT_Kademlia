@@ -61,7 +61,7 @@ func Listen(ip string, port int) {
 			fmt.Printf("store")
 			break;
 		case ProtocolPackage_FINDNODE:
-			processFindConctactMessage(unMarshalMessage)
+			processFindConctactMessage(unMarshalMessage, remoteaddr)
 			fmt.Printf("find node")
 			break;
 		case ProtocolPackage_FINDVALUE:
@@ -185,9 +185,32 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 }
 
-func processFindConctactMessage(protocolPackage *ProtocolPackage)  {
+func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr string)  {
 	fmt.Print("processFindConctactMessage procesor")
 	fmt.Print(protocolPackage)
+	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize)
+
+	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
+	//testingRep := [3]kademlia.ProtocolPackage_ContactInfo{}
+
+	for i :=0; len(kclosetContacts); i++{
+		contact := ProtocolPackage_ContactInfo{
+			ContactID: []byte(kclosetContacts[i].ID),
+			Address: &kclosetContacts[i].Address,
+			Distance: []byte(kclosetContacts[i].distance),
+		}
+		sendContacts = append(sendContacts, &contact)
+	}
+	responsePkg := &ProtocolPackage{
+		ContactsKNearest: sendContacts,
+	}
+	marshalledpongPacket, err := proto.Marshal(responsePkg)
+	if err == nil {
+		network.Sender(marshalledpongPacket, remoteaddr)
+	}else {
+		log.Fatal("marshaling pong error: ", err)
+	}
+
 }
 
 func SendFindDataMessage()  {
