@@ -79,8 +79,7 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 			//The node will not be taken into account by the other threads.
 			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
 			safeNodesCheck.mux.Unlock()
-			network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
-			var newContacts ContactCandidates = network.getResponse()
+			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
 
 			//insertion of the new one
 			safeNodesCheck.mux.Lock()

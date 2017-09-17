@@ -120,11 +120,10 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 			Address: address,
 		}
 		newContact.CalcDistance(network.myContact)
-		network.myRoutingTable.AddContact()
+		network.myRoutingTable.AddContact(newContact)
 
 		switch newTest.GetMessageSent() {
 		case ProtocolPackage_PING:
-
 			fmt.Printf("Ping")
 			break;
 		case ProtocolPackage_STORE:
@@ -224,15 +223,28 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Con
 
 	}
 
-	return network.marshalFindContact(marshalPackage, contacts.Address)
-
+	data, err := proto.Marshal(marshalPackage)
+	if err != nil {
+		log.Fatal("marshaling error: ", err)
+	}
+	return network.Sender(data, contacts.Address)
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) {
+func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) (*ContactCandidates){
 	// TODO
 	// Serialize
-	//network.marshalObject("findnode", contact)
+	//
+	result := network.marshalFindContact(findThisID, contact)
+	var contactsReceived ContactCandidates = ContactCandidates{make([]Contact, 0, len(result.ContactsKNearest))}
+
+	for i:=0 ; i < len(result.ContactsKNearest) ; i++{
+		///var kademliaId *KademliaID = result.ContactsKNearest[i].ContactID
+		newContact := Contact{ID: NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), Address: *result.ContactsKNearest[i].Address}
+		contactsReceived.contacts = append(contactsReceived.contacts, newContact)
+	}
+	return &contactsReceived
 }
+
 
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
