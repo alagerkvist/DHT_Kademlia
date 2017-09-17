@@ -25,6 +25,14 @@ func NewKademliaID(data string) *KademliaID {
 	return &newKademliaID
 }
 
+func NewKademliaIDFromBytes(data []byte) *KademliaID{
+	newKademliaID := KademliaID{}
+	for i := 0; i < IDLength; i++ {
+		newKademliaID[i] = data[i] //it returns the codes of the chars %!s(uint8=72) H
+	}
+	return &newKademliaID
+}
+
 //return an [160bits]array of random uint8=72
 func NewRandomKademliaID() *KademliaID {
 	newKademliaID := KademliaID{}
