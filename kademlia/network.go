@@ -57,14 +57,14 @@ func (network *Network) Listen() {
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
-			processPing(unMarshalMessage, remoteaddr)
+			network.processPing(unMarshalMessage, string(remoteaddr))
 			break;
 		case ProtocolPackage_STORE:
 			//TODO process Store
 			fmt.Printf("store")
 			break;
 		case ProtocolPackage_FINDNODE:
-			processFindConctactMessage(unMarshalMessage, remoteaddr)
+			network.processFindConctactMessage(unMarshalMessage, string(remoteaddr))
 			fmt.Printf("find node")
 			break;
 		case ProtocolPackage_FINDVALUE:
@@ -174,6 +174,7 @@ func processReceivedMessage () {
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr string){
 	fmt.Print("Ping procesor")
 	fmt.Print(protocolPackage)
+
 	pongPacket := &ProtocolPackage{
 		Address: &network.myContact.Address,
 		MessageSent: &ProtocolPackage_PING,
