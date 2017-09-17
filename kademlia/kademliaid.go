@@ -25,6 +25,14 @@ func NewKademliaID(data string) *KademliaID {
 	return &newKademliaID
 }
 
+func (kademliaID *KademliaID) getBytes() []byte{
+	result := make([]byte, IDLength)
+	for i:=0 ; i < IDLength ; i++{
+		result[i] = kademliaID[i]
+	}
+	return result;
+}
+
 func NewKademliaIDFromBytes(data []byte) *KademliaID{
 	newKademliaID := KademliaID{}
 	for i := 0; i < IDLength; i++ {

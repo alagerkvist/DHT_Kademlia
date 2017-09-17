@@ -3,16 +3,16 @@ package main
 import (
 	"./kademlia"
 	//"time"
-	"net"
+	/*"net"
 	"fmt"
 	"bufio"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"time"
+	"time"*/
 )
 
 func main() {
-	kademlia.Listen("127.0.0.1", 8080);
+	//kademlia.Listen("127.0.0.1", 8080);
 
 
 	/*
@@ -74,14 +74,20 @@ func main() {
 
 	}
 	*/
-	for {
-		time.Sleep(2 * time.Second)
-		//go SendPingMessageFake()
+	newNodes := kademlia.CreateRandomNetworks(1000)
+	kademlia.MakeMoreFriends(newNodes, 50)
+	for i:=0 ; i<len(newNodes) ; i++{
+		go runNode(&newNodes[i])
 	}
 
 }
 
 
+func runNode(network *kademlia.Network){
+	network.Listen()
+}
+
+/*func createRandomNode(){}
 
 func SendPingMessageFake () {
 	// TODO
@@ -102,4 +108,4 @@ func SendPingMessageFake () {
 	}
 	conn.Close()
 
-}
+}*/

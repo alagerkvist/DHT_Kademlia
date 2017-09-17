@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"log"
 	"strings"
+	"strconv"
 )
 
 type Network struct {
@@ -32,7 +33,7 @@ func (network *Network) Listen() {
 	// FindDataMessage
 	// StoreMessage
 	ipAndPort := strings.Split(network.myContact.Address, ":")
-	port := int(ipAndPort[1])
+	port, err := strconv.Atoi(ipAndPort[1])
 
 	p := make([]byte, 2048)
 	addr := net.UDPAddr{
@@ -57,14 +58,14 @@ func (network *Network) Listen() {
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
-			network.processPing(unMarshalMessage, string(remoteaddr))
+			network.processPing(unMarshalMessage, remoteaddr.String())
 			break;
 		case ProtocolPackage_STORE:
 			//TODO process Store
 			fmt.Printf("store")
 			break;
 		case ProtocolPackage_FINDNODE:
-			network.processFindConctactMessage(unMarshalMessage, string(remoteaddr))
+			network.processFindConctactMessage(unMarshalMessage, remoteaddr.String())
 			fmt.Printf("find node")
 			break;
 		case ProtocolPackage_FINDVALUE:
@@ -96,8 +97,6 @@ func unmarshallData(data int) {
 	//	log.Fatal("unmarshaling error: ", err)
 	//}
 }
-
-
 
 func (network *Network) Sender (marshaledObject []byte, address string) (*ProtocolPackage){
 
@@ -177,7 +176,6 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 	pongPacket := &ProtocolPackage{
 		Address: &network.myContact.Address,
-		MessageSent: &ProtocolPackage_PING,
 
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
@@ -197,11 +195,11 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
 	//testingRep := [3]kademlia.ProtocolPackage_ContactInfo{}
 
-	for i :=0; len(kclosetContacts); i++{
+	for i :=0; i < len(kclosetContacts); i++{
 		contact := ProtocolPackage_ContactInfo{
-			ContactID: []byte(kclosetContacts[i].ID),
+			ContactID: kclosetContacts[i].ID.getBytes(),
 			Address: &kclosetContacts[i].Address,
-			Distance: []byte(kclosetContacts[i].distance),
+			Distance: kclosetContacts[i].distance.getBytes(),
 		}
 		sendContacts = append(sendContacts, &contact)
 	}
@@ -251,10 +249,10 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Con
 	typeOfMessage := ProtocolPackage_FINDNODE
 
 	marshalPackage := &ProtocolPackage{
-		ClientID: network.myContact.ID,
+		ClientID: network.myContact.ID.getBytes(),
 		Address: proto.String(network.myContact.Address),
 		MessageSent: &typeOfMessage,
-		FindID: &findThisID,
+		FindID: findThisID.getBytes(),
 
 	}
 
@@ -279,7 +277,6 @@ func (network *Network) SendFindContactMessage(contact *Contact, findThisID *Kad
 	}
 	return &contactsReceived
 }
-
 
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
