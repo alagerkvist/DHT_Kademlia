@@ -2,7 +2,7 @@ package kademlia;
 
 
 message ProtocolPackage{
-	required bytes clientID = 1;
+	optional bytes clientID = 1;
 	required string address = 2;
 	enum MessageSent{
 		PING = 0;

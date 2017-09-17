@@ -172,9 +172,17 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	fmt.Print("Ping procesor")
 	fmt.Print(protocolPackage)
 	pongPacket := &ProtocolPackage{
-		//ClientID: net
+		Address: &network.myContact.Address,
+		MessageSent: &ProtocolPackage_PING,
+
 	}
-	network.Sender("Pongpaket", remoteaddr)
+	marshalledpongPacket, err := proto.Marshal(pongPacket)
+	if err == nil {
+		network.Sender(marshalledpongPacket, remoteaddr)
+	}else {
+		log.Fatal("marshaling pong error: ", err)
+	}
+
 }
 
 func processFindConctactMessage(protocolPackage *ProtocolPackage)  {
