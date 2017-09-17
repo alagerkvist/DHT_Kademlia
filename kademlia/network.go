@@ -119,11 +119,11 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 
 		//new contact and add it to bucket
 		newContact := &Contact{
-			ID: newTest.FindID,
+			ID: NewKademliaIDFromBytes(newTest.FindID),
 			Address: address,
 		}
-		newContact.CalcDistance(network.myContact)
-		network.myRoutingTable.AddContact(newContact)
+		newContact.CalcDistance(network.myContact.ID)
+		network.myRoutingTable.AddContact(*newContact)
 
 		switch newTest.GetMessageSent() {
 		case ProtocolPackage_PING:
