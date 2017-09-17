@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	//kademlia.Listen("127.0.0.1", 8080);
+	kademlia.Listen("127.0.0.1", 8080);
+	/*
 	typeOfMessage := kademlia.ProtocolPackage_PING
 
 	testingRep := make([]*kademlia.ProtocolPackage_ContactInfo, 0)
@@ -70,7 +71,7 @@ func main() {
 		log.Print("Distance: ", string(newTest.ContactsKNearest[i].Distance[:]))
 
 	}
-
+	*/
 	for {
 		time.Sleep(2 * time.Second)
 		//go SendPingMessageFake()

@@ -11,9 +11,8 @@ import (
 )
 
 type Network struct {
-	ip string
-	port int
-
+	myContact *Contact
+	myRoutingTable *RoutingTable
 }
 
 
@@ -65,50 +64,12 @@ func unmarshallData(data int) {
 	//}
 }
 
-func (networkInfo *Network) marshalObject(operation string, myKademliaID KademliaID){
-	var typeOfMessage ProtocolPackage
-	var kNearestNode ProtocolPackage_ContactInfo
 
 
-	switch operation {
-	//Maybe it would be easier to do a sep. func for each induvidal case
-	case "ping":
-		typeOfMessage = ProtocolPackage_PING
-	case "store":
-		typeOfMessage = ProtocolPackage_STORE
-	case "node":
-		typeOfMessage = ProtocolPackage_FINDNODE
-	default:
-		typeOfMessage = ProtocolPackage_FINDVALUE
-
-	}
-
-	marshalPackage := &ProtocolPackage{
-		ClientID: myKademliaID,
-		Ip: proto.String(networkInfo.ip),
-		ListenPort: proto.Int32(networkInfo.port),
-		MessageSent: &typeOfMessage,
-		ContactsKNearest: kNearestNode,
-
-	}
-
-
-	data, err := proto.Marshal(marshalPackage)
-	if err != nil{
-		log.Fatal("Marshal went wrong")
-	}
-
-	Sender(data, "localhost", 123) //Here we need to specify which node ip and port to send to
-
-
-}
-
-
-func Sender (marshaledObject []byte, ip string, port int) (*ProtocolPackage){
+func (network *Network) Sender (marshaledObject []byte, address string) (*ProtocolPackage){
 
 	p :=  make([]byte, 2048)
-	ipPort := ip+":"+string(port)
-	conn, err := net.DialTimeout("udp", ipPort, 100)
+	conn, err := net.DialTimeout("udp", address, 100)
 	// //net.Dial("udp", "127.0.0.1:8080")
 
 	if err != nil {
@@ -119,8 +80,36 @@ func Sender (marshaledObject []byte, ip string, port int) (*ProtocolPackage){
 	_, err = bufio.NewReader(conn).Read(p)
 	if err == nil {
 		fmt.Printf("%s\n", p)
+
 		newTest := &ProtocolPackage{}
 		err = proto.Unmarshal(p, newTest)
+
+		//new contact and add it to bucket
+		newContact := &Contact{
+			ID: newTest.FindID,
+			Address: address,
+		}
+		newContact.CalcDistance(network.myContact)
+		network.myRoutingTable.AddContact()
+
+		switch newTest.GetMessageSent() {
+		case ProtocolPackage_PING:
+
+			fmt.Printf("Ping")
+			break;
+		case ProtocolPackage_STORE:
+			fmt.Printf("store")
+			break;
+		case ProtocolPackage_FINDNODE:
+			fmt.Printf("find node")
+			break;
+		case ProtocolPackage_FINDVALUE:
+			fmt.Printf("find value")
+			break;
+
+		}
+
+
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
@@ -188,14 +177,31 @@ func (network *Network) SendPingMessage(contact *Contact) {
 	// Serialize
 }
 
-func (network *Network) SendFindContactMessage(contact *Contact) {
+func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Contact) (*ProtocolPackage){
+	typeOfMessage := ProtocolPackage_FINDNODE
+
+	marshalPackage := &ProtocolPackage{
+		ClientID: network.myContact.ID,
+		Address: proto.String(network.myContact.Address),
+		MessageSent: &typeOfMessage,
+		FindID: &findThisID,
+
+	}
+
+	return network.marshalFindContact(marshalPackage, contacts.Address)
+
+}
+
+func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) {
 	// TODO
 	// Serialize
+	//network.marshalObject("findnode", contact)
 }
 
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
 	// Serialize
+
 }
 
 func (network *Network) SendStoreMessage(data []byte) {
