@@ -8,6 +8,7 @@ import (
 	//"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"log"
+	"strings"
 )
 
 type Network struct {
@@ -23,18 +24,20 @@ func sendResponse(conn *net.UDPConn, addr *net.UDPAddr) {
 	}
 }
 
-func Listen(ip string, port int) {
+func (network *Network) Listen() {
 	// TODO
 	//socket listening different events
 	// PingMessage
 	// FindContactMessage
 	// FindDataMessage
 	// StoreMessage
+	ipAndPort := strings.Split(network.myContact.Address, ":")
+	port := int(ipAndPort[1])
 
 	p := make([]byte, 2048)
 	addr := net.UDPAddr{
 		Port: port,
-		IP: net.ParseIP(ip),
+		IP: net.ParseIP(ipAndPort[0]),
 	}
 	ser, err := net.ListenUDP("udp", &addr)
 	if err != nil {
@@ -116,11 +119,11 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 
 		//new contact and add it to bucket
 		newContact := &Contact{
-			ID: newTest.FindID,
+			ID: NewKademliaIDFromBytes(newTest.FindID),
 			Address: address,
 		}
-		newContact.CalcDistance(network.myContact)
-		network.myRoutingTable.AddContact(newContact)
+		newContact.CalcDistance(network.myContact.ID)
+		network.myRoutingTable.AddContact(*newContact)
 
 		switch newTest.GetMessageSent() {
 		case ProtocolPackage_PING:

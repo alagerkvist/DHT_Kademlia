@@ -5,7 +5,7 @@ import "sync"
 const alpha = 3
 
 type Kademlia struct {
-	routintTable RoutingTable
+	network *Network
 }
 
 type NodeToCheck struct{
@@ -30,7 +30,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	var counterThreadsDone = 0
 
 	//Fulfill this array with at most the k nodes from buckets
-	var firstContacts []Contact = kademlia.routintTable.FindClosestContacts(target.ID, bucketSize)
+	var firstContacts []Contact = kademlia.network.myRoutingTable.FindClosestContacts(target.ID, bucketSize)
 	for i:=0 ; i<len(firstContacts) ; i++ {
 		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
@@ -41,7 +41,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 			wg.Add(1)
 			counterThreadsDone++
 			nbRunningThreads++
-			go safeNodesToCheck.sendFindNode(&nbRunningThreads, &network, &noMoreToCheck, &wg)
+			go safeNodesToCheck.sendFindNode(&nbRunningThreads, &network, &noMoreToCheck, &wg, target.ID)
 		}
 
 		//Stop the infinite loop when get all the information needed
@@ -70,7 +70,7 @@ func (kademlia *Kademlia) Store(data []byte) {
 /*
 *	Send RPC_NODE RPC and add new contacts to the array, check if need to end the loop.
  */
-func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network *Network, noMoreToCheck *bool, wg *sync.WaitGroup){
+func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network *Network, noMoreToCheck *bool, wg *sync.WaitGroup, targetID *KademliaID){
 	defer wg.Done()
 	safeNodesCheck.mux.Lock()
 	//find the next one to check
@@ -79,7 +79,7 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 			//The node will not be taken into account by the other threads.
 			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
 			safeNodesCheck.mux.Unlock()
-			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact)
+			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact, targetID)
 
 			//insertion of the new one
 			safeNodesCheck.mux.Lock()
