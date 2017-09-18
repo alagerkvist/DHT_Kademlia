@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 	"strconv"
+	"time"
 )
 
 type Network struct {
@@ -322,6 +323,8 @@ func (network *Network) PrintNetwork () {
 
 
 func (network *Network) TestKademliaPing(contact *Contact) {
-	network.myRoutingTable.AddContact(*contact)
-	network.SendPingMessage(contact)
+	for{
+		time.Sleep(2 * time.Second)
+		go network.SendPingMessage(contact)
+	}
 }

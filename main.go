@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"log"
 	"time"*/
-		"time"
 )
 
 func main() {
@@ -82,10 +81,7 @@ func main() {
 	newNodes[0].PrintNetwork()
 	go newNodes[0].Listen()
 
-	for{
-		time.Sleep(2 * time.Second)
-		go newNodes[1].TestKademliaPing(newNodes[0].GetMyContact())
-	}
+	newNodes[1].TestKademliaPing(newNodes[0].GetMyContact())
 
 
 
