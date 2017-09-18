@@ -3,7 +3,7 @@ package kademlia
 import (
 	"net"
 	"fmt"
-	"bufio"
+	//"bufio"
 	//"log"
 	//"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/proto"
@@ -34,32 +34,39 @@ func (network *Network) Listen() {
 	// FindContactMessage
 	// FindDataMessage
 	// StoreMessage
+	//fmt.Println("****Listener***")
+	//fmt.Println(network.myContact.ID)
+	//fmt.Println(network.myContact.Address)
 	ipAndPort := strings.Split(network.myContact.Address, ":")
 	port, err := strconv.Atoi(ipAndPort[1])
 
 	p := make([]byte, 2048)
+
 	addr := net.UDPAddr{
 		Port: port,
 		IP: net.ParseIP(ipAndPort[0]),
 	}
-	fmt.Println("addr")
+	//fmt.Println("addr")
 	ser, err := net.ListenUDP("udp", &addr)
 	if err != nil {
 		fmt.Printf("Some error A %v\n", err)
 		return
 	}
 	for {
+
 		//data,remoteaddr,err := ser.ReadFromUDP(p)
-		fmt.Println("listen")
+		//fmt.Println("listen")
 
 		n,remoteaddr,err := ser.ReadFromUDP(p)
 
+		fmt.Println("¿¿====")
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
 
+		fmt.Println(unMarshalMessage.GetMessageSent())
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
@@ -70,8 +77,9 @@ func (network *Network) Listen() {
 			fmt.Printf("store")
 			break;
 		case ProtocolPackage_FINDNODE:
-			network.processFindConctactMessage(unMarshalMessage, remoteaddr.String())
-			fmt.Printf("find node")
+			fmt.Println("&&&&&&&&&&&&&&&find node")
+			network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
+
 			break;
 		case ProtocolPackage_FINDVALUE:
 			//TODO process FindValue
@@ -113,34 +121,39 @@ func unmarshallData(data int) {
 
 func (network *Network) Sender (marshaledObject []byte, address string) (*ProtocolPackage){
 
+	fmt.Println("4444sender")
+	fmt.Println(address)
 	p :=  make([]byte, 2048)
 	conn, err := net.Dial("udp", address)
 	// //net.Dial("udp", "127.0.0.1:8080")
 
 	if err != nil {
-		fmt.Printf("Some error %v", err)
+		fmt.Printf("126 Some error %v", err)
 		return nil
 	}
 	fmt.Fprintf(conn, string(marshaledObject))
-
+	fmt.Println(p)
 	n,err := conn.Read(p)
-
-	_, err = bufio.NewReader(conn).Read(p)
+	//fmt.Println(p)
+	//a, err := bufio.NewReader(conn).Read(p)
+	//fmt.Println(a)
+	fmt.Println("SEnder138")
 	if err == nil {
-		fmt.Printf("%s\n", p)
-
-		newTest := &ProtocolPackage{}
-		err = proto.Unmarshal(p[:n], newTest)
+		fmt.Println("Response from the server")
+		unMarshalledResponse := &ProtocolPackage{}
+		err = proto.Unmarshal(p[:n], unMarshalledResponse)
 
 		//new contact and add it to bucket
-		newContact := &Contact{
-			ID: NewKademliaIDFromBytes(newTest.FindID),
+		/*newContact := &Contact{
+			ID: NewKademliaIDFromBytes(unMarshalledResponse.FindID),
 			Address: address,
-		}
-		newContact.CalcDistance(network.myContact.ID)
-		network.myRoutingTable.AddContact(*newContact)
+		}*/
 
-		switch newTest.GetMessageSent() {
+		//newContact.CalcDistance(network.myContact.ID)
+		//network.myRoutingTable.AddContact(*newContact)
+
+
+		switch unMarshalledResponse.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
 			break;
@@ -158,14 +171,14 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 
 
 		if err != nil {
-			log.Fatal("158 unmarshaling error: ", err)
+			log.Fatal("unmarshaling error: ", err)
 		}
 
-		log.Printf("Unmarshalled to: %+v", newTest)
+		fmt.Println("Unmarshalled to: %+v", unMarshalledResponse)
 		conn.Close()
-		return newTest
+		return unMarshalledResponse
 	} else {
-		fmt.Printf("Some error %v\n", err)
+		fmt.Printf("175 Some error %v\n", err)
 	}
 	conn.Close()
 
@@ -208,9 +221,9 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 }
 
-func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr string)  {
-	fmt.Print("processFindConctactMessage procesor")
-	fmt.Print(protocolPackage)
+func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
+	fmt.Println("processFindConctactMessage procesor")
+	fmt.Println(protocolPackage)
 	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize)
 
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
@@ -224,14 +237,27 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 		}
 		sendContacts = append(sendContacts, &contact)
 	}
+	typeOfMessage := ProtocolPackage_FINDNODE
 	responsePkg := &ProtocolPackage{
+		Address: &network.myContact.Address,
+		MessageSent: &typeOfMessage,
 		ContactsKNearest: sendContacts,
 	}
-	marshalledpongPacket, err := proto.Marshal(responsePkg)
+	marshalledNodesPacket, err := proto.Marshal(responsePkg)
 	if err == nil {
-		network.Sender(marshalledpongPacket, remoteaddr)
+		fmt.Println("¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿")
+		fmt.Println(marshalledNodesPacket)
+
+
+		_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
+		if err != nil {
+			fmt.Printf("Couldn't send response %v", err)
+		}
+
 	}else {
-		log.Fatal("marshaling pong error: ", err)
+		fmt.Println("??????????????")
+
+		log.Fatal("marshaling find contact rsponse error: ", err)
 	}
 
 }
@@ -268,15 +294,19 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Contact) (*ProtocolPackage){
 	typeOfMessage := ProtocolPackage_FINDNODE
 
+	fmt.Println(findThisID)
+	fmt.Println(contacts)
+	fmt.Println(findThisID.getBytes())
 	marshalPackage := &ProtocolPackage{
 		ClientID: network.myContact.ID.getBytes(),
 		Address: proto.String(network.myContact.Address),
 		MessageSent: &typeOfMessage,
 		FindID: findThisID.getBytes(),
-
 	}
 
+	fmt.Println(marshalPackage)
 	data, err := proto.Marshal(marshalPackage)
+	fmt.Println(data)
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
@@ -289,14 +319,21 @@ func (network *Network) SendFindContactMessage(contact *Contact, findThisID *Kad
 	// Serialize
 	//
 	result := network.marshalFindContact(findThisID, contact)
-	var contactsReceived ContactCandidates = ContactCandidates{make([]Contact, 0, len(result.ContactsKNearest))}
+	fmt.Println("****")
+	fmt.Println(result)
+	return &ContactCandidates{}
+	/*
+	var contactsReceived = []ContactCandidates
+	if len != nil {
+		contactsReceived = ContactCandidates{make([]Contact, 0, len(result.ContactsKNearest))}
+	}
 
 	for i:=0 ; i < len(result.ContactsKNearest) ; i++{
 		///var kademliaId *KademliaID = result.ContactsKNearest[i].ContactID
 		newContact := Contact{ID: NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), Address: *result.ContactsKNearest[i].Address}
 		contactsReceived.contacts = append(contactsReceived.contacts, newContact)
 	}
-	return &contactsReceived
+	return &contactsReceived*/
 }
 
 
@@ -317,7 +354,6 @@ func (network *Network) PrintNetwork () {
 	//fmt.Println(network.myContact.distance)
 	fmt.Println(network.myContact.Address)
 	//fmt.Println(network.myRoutingTable)
-
 	return
 }
 

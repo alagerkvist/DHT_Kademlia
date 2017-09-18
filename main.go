@@ -9,6 +9,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"log"
 	"time"*/
+	"time"
+	"fmt"
 )
 
 func main() {
@@ -74,16 +76,45 @@ func main() {
 
 	}
 	*/
-	newNodes := kademlia.CreateRandomNetworks(2)
+	newNodes := kademlia.CreateRandomNetworks(100)
 
-	//kademlia.MakeMoreFriends(newNodes, 2)
+	kademlia.MakeMoreFriends(newNodes, 5)
 	//newNodes[0].TestKademliaPing()
 	newNodes[0].PrintNetwork()
-	go newNodes[0].Listen()
+	for i,_ := range newNodes {
+		go newNodes[i].Listen()
+	}
 
-	newNodes[1].TestKademliaPing(newNodes[0].GetMyContact())
 
 
+	/*for i,_ := range newNodes {
+		go newNodes[i].Listen()
+	}
+	*/
+
+	//go newNodes[1].TestKademliaPing(newNodes[0].GetMyContact())
+	//go newNodes[1].TestKademliaPing(newNodes[2].GetMyContact())
+
+	contacts := newNodes[33].GetMyRoutingTable().FindClosestContacts(kademlia.NewKademliaID("2111111400000000000000000000000000000000"), 6)
+	for i := range contacts {
+		fmt.Println(contacts[i].String())
+	}
+	fmt.Println("*****************")
+	//go newNodes[33].TestKademliaPing(newNodes[99].GetMyContact())
+
+
+	newNodes[33].SendFindContactMessage(newNodes[20].GetMyContact(),kademlia.NewKademliaID("2111111400000000000000000000000000000000"))
+
+	contactsB := newNodes[33].GetMyRoutingTable().FindClosestContacts(kademlia.NewKademliaID("2111111400000000000000000000000000000000"), 20)
+	for i := range contactsB {
+		fmt.Println(contactsB[i].String())
+	}
+	fmt.Println("*****************")
+
+	for{
+		time.Sleep(20 * time.Second)
+		fmt.Println("hello")
+	}
 
 	/*for i, node := range newNodes {
 		fmt.Println(i)

@@ -2,6 +2,8 @@ package kademlia
 
 import (
 	"testing"
+	//"fmt"
+	"fmt"
 )
 
 func TestRoutingTable(t *testing.T) {
@@ -19,15 +21,12 @@ func TestRoutingTable(t *testing.T) {
 		fmt.Println(contacts[i].String())
 	}*/
 
-	newNodes := CreateRandomNetworks(1000)
-	MakeMoreFriends(newNodes, 50)
-	for i:=0 ; i<len(newNodes) ; i++{
-		go newNodes[i].runNode()
+	newNodes := CreateRandomNetworks(10)
+	MakeMoreFriends(newNodes, 2)
+	fmt.Println(newNodes)
+	for _,node := range newNodes {
+		//fmt.Println(i)
+		//fmt.Println(node)
+		go node.Listen()
 	}
-
-}
-
-
-func (network *Network) runNode(){
-	network.Listen()
 }

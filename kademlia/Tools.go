@@ -3,14 +3,16 @@ package kademlia
 import (
  "math/rand"
 	"strconv"
+	"fmt"
 )
 
 func CreateRandomNetworks(numberNodes int) []Network{
 	var newNetworks []Network = make([]Network, numberNodes)
-
+	fmt.Println("creating")
 	for i:= 0 ; i < numberNodes ; i++ {
 		var newKademliaId *KademliaID = NewRandomKademliaID()
 		number := 1234 + i
+		fmt.Println(number)
 		var newContact = NewContact(NewRandomKademliaID(), "127.0.0.1:"+strconv.Itoa(number))
 		newNetworks[i].myContact = &newContact
 		newNetworks[i].myRoutingTable = NewRoutingTable(NewContact(newKademliaId, "127.0.0.1:"+strconv.Itoa(number)))
