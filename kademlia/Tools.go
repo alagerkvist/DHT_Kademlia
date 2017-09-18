@@ -10,10 +10,10 @@ func CreateRandomNetworks(numberNodes int) []Network{
 
 	for i:= 0 ; i < numberNodes ; i++ {
 		var newKademliaId *KademliaID = NewRandomKademliaID()
-		number := 8000 + i
-		var newContact = NewContact(NewRandomKademliaID(), "localhost:"+strconv.Itoa(number))
+		number := 1234 + i
+		var newContact = NewContact(NewRandomKademliaID(), "127.0.0.1:"+strconv.Itoa(number))
 		newNetworks[i].myContact = &newContact
-		newNetworks[i].myRoutingTable = NewRoutingTable(NewContact(newKademliaId, "localhost:"+string(8000+i)))
+		newNetworks[i].myRoutingTable = NewRoutingTable(NewContact(newKademliaId, "127.0.0.1:"+strconv.Itoa(number)))
 	}
 	return newNetworks
 }

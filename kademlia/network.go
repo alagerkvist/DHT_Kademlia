@@ -27,7 +27,6 @@ func sendResponse(conn *net.UDPConn, addr *net.UDPAddr) {
 
 func (network *Network) Listen() {
 
-	fmt.Println("*****************************")
 	// TODO
 	//socket listening different events
 	// PingMessage
@@ -48,9 +47,10 @@ func (network *Network) Listen() {
 		fmt.Printf("Some error A %v\n", err)
 		return
 	}
-	fmt.Println("ready to listen")
 	for {
 		//data,remoteaddr,err := ser.ReadFromUDP(p)
+		fmt.Println("listen")
+
 		_,remoteaddr,err := ser.ReadFromUDP(p)
 
 		unMarshalMessage := &ProtocolPackage{}
@@ -92,6 +92,14 @@ func (network *Network) Listen() {
 	}
 
 	//unserialize
+}
+
+func (network *Network) GetMyContact() *Contact{
+	return network.myContact
+}
+
+func (network *Network) GetMyRoutingTable() *RoutingTable{
+	return network.myRoutingTable
 }
 
 func unmarshallData(data int) {
@@ -228,25 +236,24 @@ func SendStoreMessage()  {
 }
 
 func (network *Network) SendPingMessage(contact *Contact) {
-	// TODO
+	network.marshalPing(contact)
+	//fmt.Println(result.Address)
+}
 
-	p :=  make([]byte, 2048)
-	conn, err := net.Dial("udp", "127.0.0.1:1234")
 
+func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
+	typeOfMessage := ProtocolPackage_PING
+	marshalPackage := &ProtocolPackage{
+		ClientID: network.myContact.ID.getBytes(),
+		Address: proto.String(network.myContact.Address),
+		MessageSent: &typeOfMessage,
+	}
+
+	data, err := proto.Marshal(marshalPackage)
 	if err != nil {
-		fmt.Printf("Some error %v", err)
-		return
+		log.Fatal("marshaling error: ", err)
 	}
-	fmt.Fprintf(conn, "Hi UDP Server, How are you doing?")
-	_, err = bufio.NewReader(conn).Read(p)
-	if err == nil {
-		fmt.Printf("%s\n", p)
-	} else {
-		fmt.Printf("Some error %v\n", err)
-	}
-	conn.Close()
-
-	// Serialize
+	return network.Sender(data, contacts.Address)
 }
 
 func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Contact) (*ProtocolPackage){
@@ -301,4 +308,11 @@ func (network *Network) PrintNetwork () {
 	//fmt.Println(network.myRoutingTable)
 
 	return
+}
+
+
+
+func (network *Network) TestKademliaPing(contact *Contact) {
+	network.myRoutingTable.AddContact(*contact)
+	network.SendPingMessage(contact)
 }

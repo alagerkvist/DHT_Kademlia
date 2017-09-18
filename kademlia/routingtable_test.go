@@ -27,6 +27,7 @@ func TestRoutingTable(t *testing.T) {
 
 }
 
+
 func (network *Network) runNode(){
 	network.Listen()
 }

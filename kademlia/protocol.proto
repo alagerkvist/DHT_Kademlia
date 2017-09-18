@@ -5,10 +5,10 @@ message ProtocolPackage{
 	optional bytes clientID = 1;
 	required string address = 2;
 	enum MessageSent{
-		PING = 0;
-		STORE = 1;
-		FINDNODE = 2;
-		FINDVALUE = 3;
+		PING = 1;
+		STORE = 2;
+		FINDNODE = 3;
+		FINDVALUE = 4;
 	}
 	required MessageSent messageSent = 3;
 	optional bytes findID = 4;
