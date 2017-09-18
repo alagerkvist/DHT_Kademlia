@@ -51,10 +51,10 @@ func (network *Network) Listen() {
 		//data,remoteaddr,err := ser.ReadFromUDP(p)
 		fmt.Println("listen")
 
-		_,remoteaddr,err := ser.ReadFromUDP(p)
+		n,remoteaddr,err := ser.ReadFromUDP(p)
 
 		unMarshalMessage := &ProtocolPackage{}
-		err = proto.Unmarshal(p, unMarshalMessage)
+		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
@@ -121,6 +121,7 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 		return nil
 	}
 	fmt.Fprintf(conn, string(marshaledObject))
+
 	_, err = bufio.NewReader(conn).Read(p)
 	if err == nil {
 		fmt.Printf("%s\n", p)
@@ -183,12 +184,14 @@ func processReceivedMessage () {
 }
 
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr string){
-	fmt.Print("Ping procesor")
+	fmt.Print("Ping processor")
 	fmt.Print(protocolPackage)
 
+	typeOfMessage := ProtocolPackage_PING
 	pongPacket := &ProtocolPackage{
+		ClientID: network.myContact.ID.getBytes(),
 		Address: &network.myContact.Address,
-
+		MessageSent: &typeOfMessage,
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
 	if err == nil {
@@ -274,6 +277,7 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contacts *Con
 	return network.Sender(data, contacts.Address)
 }
 
+
 func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) (*ContactCandidates){
 	// TODO
 	// Serialize
@@ -288,6 +292,7 @@ func (network *Network) SendFindContactMessage(contact *Contact, findThisID *Kad
 	}
 	return &contactsReceived
 }
+
 
 func (network *Network) SendFindDataMessage(hash string) {
 	// TODO
@@ -309,7 +314,6 @@ func (network *Network) PrintNetwork () {
 
 	return
 }
-
 
 
 func (network *Network) TestKademliaPing(contact *Contact) {
