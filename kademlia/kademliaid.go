@@ -35,8 +35,8 @@ func (kademliaID *KademliaID) getBytes() []byte{
 
 func NewKademliaIDFromBytes(data []byte) *KademliaID{
 	newKademliaID := KademliaID{}
-	for i := 0; i < IDLength; i++ {
-		newKademliaID[i] = data[i] //it returns the codes of the chars %!s(uint8=72) H
+	for i, byt := range data{
+		newKademliaID[i] = byt //it returns the codes of the chars %!s(uint8=72) H
 	}
 	return &newKademliaID
 }

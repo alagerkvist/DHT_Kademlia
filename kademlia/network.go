@@ -62,7 +62,7 @@ func (network *Network) Listen() {
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
-			network.processPing(unMarshalMessage, remoteaddr.String())
+			network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_STORE:
 			//TODO process Store
@@ -113,7 +113,7 @@ func unmarshallData(data int) {
 func (network *Network) Sender (marshaledObject []byte, address string) (*ProtocolPackage){
 
 	p :=  make([]byte, 2048)
-	conn, err := net.DialTimeout("udp", address, 100)
+	conn, err := net.Dial("udp", address)
 	// //net.Dial("udp", "127.0.0.1:8080")
 
 	if err != nil {
@@ -122,12 +122,14 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 	}
 	fmt.Fprintf(conn, string(marshaledObject))
 
+	n,err := conn.Read(p)
+
 	_, err = bufio.NewReader(conn).Read(p)
 	if err == nil {
 		fmt.Printf("%s\n", p)
 
 		newTest := &ProtocolPackage{}
-		err = proto.Unmarshal(p, newTest)
+		err = proto.Unmarshal(p[:n], newTest)
 
 		//new contact and add it to bucket
 		newContact := &Contact{
@@ -155,7 +157,7 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 
 
 		if err != nil {
-			log.Fatal("unmarshaling error: ", err)
+			log.Fatal("158 unmarshaling error: ", err)
 		}
 
 		log.Printf("Unmarshalled to: %+v", newTest)
@@ -183,8 +185,9 @@ func processReceivedMessage () {
 
 }
 
-func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr string){
-	fmt.Print("Ping processor")
+func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
+	fmt.Print("Ping processor:   ")
+	fmt.Print(remoteaddr)
 	fmt.Print(protocolPackage)
 
 	typeOfMessage := ProtocolPackage_PING
@@ -195,7 +198,9 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
 	if err == nil {
-		network.Sender(marshalledpongPacket, remoteaddr)
+		_,err := ser.WriteToUDP(marshalledpongPacket, remoteaddr)
+		if err != nil {
+			fmt.Printf("Couldn’t send response %v", err)}
 	}else {
 		log.Fatal("marshaling pong error: ", err)
 	}
