@@ -19,8 +19,8 @@ func TestRoutingTable(t *testing.T) {
 		fmt.Println(contacts[i].String())
 	}*/
 
-	newNodes := createRandomNetworks(1000)
-	makeMoreFriends(newNodes, 50)
+	newNodes := CreateRandomNetworks(1000)
+	MakeMoreFriends(newNodes, 50)
 	for i:=0 ; i<len(newNodes) ; i++{
 		go newNodes[i].runNode()
 	}

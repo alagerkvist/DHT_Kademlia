@@ -8,7 +8,9 @@ import (
 	"bufio"
 	"github.com/golang/protobuf/proto"
 	"log"
-	"time"*/
+	"time"
+	"fmt"*/
+	"fmt"
 )
 
 func main() {
@@ -75,10 +77,19 @@ func main() {
 	}
 	*/
 	newNodes := kademlia.CreateRandomNetworks(1000)
-	kademlia.MakeMoreFriends(newNodes, 50)
-	for i:=0 ; i<len(newNodes) ; i++{
-		go runNode(&newNodes[i])
+	kademlia.MakeMoreFriends(newNodes, 2)
+
+
+	for i, node := range newNodes {
+		fmt.Println(i)
+		node.PrintNetwork()
+		go runNode(&node)
 	}
+
+
+	/*for i:=0 ; i<len(newNodes) ; i++{
+		go runNode(&newNodes[i])
+	}*/
 
 }
 

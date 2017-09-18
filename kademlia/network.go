@@ -26,6 +26,8 @@ func sendResponse(conn *net.UDPConn, addr *net.UDPAddr) {
 }
 
 func (network *Network) Listen() {
+
+	fmt.Println("*****************************")
 	// TODO
 	//socket listening different events
 	// PingMessage
@@ -40,11 +42,13 @@ func (network *Network) Listen() {
 		Port: port,
 		IP: net.ParseIP(ipAndPort[0]),
 	}
+	fmt.Println("addr")
 	ser, err := net.ListenUDP("udp", &addr)
 	if err != nil {
 		fmt.Printf("Some error A %v\n", err)
 		return
 	}
+	fmt.Println("ready to listen")
 	for {
 		//data,remoteaddr,err := ser.ReadFromUDP(p)
 		_,remoteaddr,err := ser.ReadFromUDP(p)
@@ -287,4 +291,14 @@ func (network *Network) SendFindDataMessage(hash string) {
 func (network *Network) SendStoreMessage(data []byte) {
 	// TODO
 	// Serialize
+}
+
+
+func (network *Network) PrintNetwork () {
+	//fmt.Println(network.myContact.ID)
+	//fmt.Println(network.myContact.distance)
+	fmt.Println(network.myContact.Address)
+	//fmt.Println(network.myRoutingTable)
+
+	return
 }

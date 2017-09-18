@@ -1,6 +1,8 @@
 package kademlia
 
-import "sync"
+import (
+	"sync"
+)
 
 const alpha = 3
 
@@ -110,3 +112,4 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	*noMoreToCheck = true
 	return
 }
+
