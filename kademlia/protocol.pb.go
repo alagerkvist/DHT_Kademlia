@@ -2,15 +2,22 @@
 // source: protocol.proto
 // DO NOT EDIT!
 
+/*
+Package kademlia is a generated protocol buffer package.
+
+It is generated from these files:
+	protocol.proto
+
+It has these top-level messages:
+	ProtocolPackage
+*/
 package kademlia
 
-import "github.com/golang/protobuf/proto"
-import json "encoding/json"
+import proto "github.com/golang/protobuf/proto"
 import math "math"
 
-// Reference proto, json, and math imports to suppress error if they are not otherwise used.
+// Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
-var _ = &json.SyntaxError{}
 var _ = math.Inf
 
 type ProtocolPackage_MessageSent int32
@@ -42,9 +49,6 @@ func (x ProtocolPackage_MessageSent) Enum() *ProtocolPackage_MessageSent {
 }
 func (x ProtocolPackage_MessageSent) String() string {
 	return proto.EnumName(ProtocolPackage_MessageSent_name, int32(x))
-}
-func (x ProtocolPackage_MessageSent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(x.String())
 }
 func (x *ProtocolPackage_MessageSent) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(ProtocolPackage_MessageSent_value, data, "ProtocolPackage_MessageSent")
@@ -87,7 +91,7 @@ func (m *ProtocolPackage) GetMessageSent() ProtocolPackage_MessageSent {
 	if m != nil && m.MessageSent != nil {
 		return *m.MessageSent
 	}
-	return 0
+	return ProtocolPackage_PING
 }
 
 func (m *ProtocolPackage) GetFindID() []byte {

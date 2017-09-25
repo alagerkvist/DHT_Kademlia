@@ -1,6 +1,6 @@
 package kademlia
 
-const bucketSize = 20
+const bucketSize = 10
 
 type RoutingTable struct {
 	me      Contact
@@ -60,4 +60,9 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 	}
 
 	return IDLength*8 - 1
+}
+
+
+func (routingTable *RoutingTable) GetMyContact() *Contact{
+	return &routingTable.me
 }

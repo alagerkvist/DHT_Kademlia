@@ -2,6 +2,8 @@ package kademlia
 
 import (
 	"sync"
+	"fmt"
+	"strconv"
 )
 
 const alpha = 3
@@ -27,23 +29,32 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	var safeNodesToCheck = SafeNodesCheck{nodesToCheck: make([]NodeToCheck, 0, bucketSize)}
 	var noMoreToCheck bool
 	nbRunningThreads := 0
-	network := Network{}
 	var wg sync.WaitGroup
 	var counterThreadsDone = 0
 
 	//Fulfill this array with at most the k nodes from buckets
 	var firstContacts []Contact = kademlia.network.myRoutingTable.FindClosestContacts(target.ID, bucketSize)
+
+	fmt.Println("\n--- Contacts to join: ")
 	for i:=0 ; i<len(firstContacts) ; i++ {
+		fmt.Println(firstContacts[i].String())
+
 		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
+	fmt.Println("---")
 
-	//Start sending rpc nodes ->wait method
+	//Test with one
+	//wg.Add(1)
+	//safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, target.ID)
+
+
+	//Start sending rpc nodes -> wait method
 	for {
 		if nbRunningThreads <= alpha {
 			wg.Add(1)
 			counterThreadsDone++
 			nbRunningThreads++
-			go safeNodesToCheck.sendFindNode(&nbRunningThreads, &network, &noMoreToCheck, &wg, target.ID)
+			go safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, target.ID)
 		}
 
 		//Stop the infinite loop when get all the information needed
@@ -54,6 +65,8 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 			}
 		}
 	}
+
+	safeNodesToCheck.Print()
 }
 
 //LookupContact is a method of KAdemlia to locate some Data
@@ -77,32 +90,52 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	safeNodesCheck.mux.Lock()
 	//find the next one to check
 	for i:=0 ; i < len(safeNodesCheck.nodesToCheck) ; i++{
-		if !safeNodesCheck.nodesToCheck[i].alreadyChecked {
+		if !safeNodesCheck.nodesToCheck[i].alreadyChecked && !safeNodesCheck.nodesToCheck[i].contact.ID.Equals(network.myRoutingTable.me.ID){
 			//The node will not be taken into account by the other threads.
 			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
 			safeNodesCheck.mux.Unlock()
+
+			fmt.Println("\n*** Ask to: " + safeNodesCheck.nodesToCheck[i].contact.String())
+			fmt.Println("Target: "+ targetID.String() +"\n***\n")
+
 			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact, targetID)
 
+			/*fmt.Println("\n%%%% Before adding: ")
+			safeNodesCheck.Print()
+			fmt.Println("\n%%%")
+			*/
 			//insertion of the new one
 			safeNodesCheck.mux.Lock()
-			for i:=0 ; i<len(newContacts.contacts) ; i++{
+			for i:=0 ; i<newContacts.Len() ; i++{
+				//fmt.Println("Contact to add: " + newContacts.contacts[i].String())
+
 				for j:=0 ; j<bucketSize ; j++{
+
+
 					//case of less than k values
 					if j >= len(safeNodesCheck.nodesToCheck) {
 						safeNodesCheck.nodesToCheck = append(safeNodesCheck.nodesToCheck, NodeToCheck{&newContacts.contacts[i], false})
-
-					} else if  newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact) &&
-							!newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID){
+						break;
+					} else if newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID){
+						break;
+					} else if  newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact){
 						//Shift value of the array and insert the new one
 						copy(safeNodesCheck.nodesToCheck[j+1:], safeNodesCheck.nodesToCheck[j: len(safeNodesCheck.nodesToCheck) - 1])
 						safeNodesCheck.nodesToCheck[j].contact = &(newContacts.contacts[i])
 						safeNodesCheck.nodesToCheck[j].alreadyChecked = false
+						break;
 					}
 				}
 			}
 			safeNodesCheck.mux.Unlock()
 			*nbRunningThreads--
 			*noMoreToCheck = false
+
+
+			/*fmt.Println("\n%%%% After adding: ")
+			safeNodesCheck.Print()
+			fmt.Println("\n%%%")
+			*/
 			return
 		}
 	}
@@ -110,6 +143,18 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	safeNodesCheck.mux.Unlock()
 	*nbRunningThreads--
 	*noMoreToCheck = true
+
+	fmt.Println("\n%%%% Nothing to add \n%%%")
+
 	return
 }
 
+func (safeNodeToCheck *SafeNodesCheck) Print() {
+	for i:=0 ; i < len(safeNodeToCheck.nodesToCheck) ; i++{
+		fmt.Println(safeNodeToCheck.nodesToCheck[i].contact.String() + "  alrdyChecked: " + strconv.FormatBool(safeNodeToCheck.nodesToCheck[i].alreadyChecked))
+	}
+}
+
+func (kademlia *Kademlia) GetNetwork() *Network{
+	return kademlia.network
+}
