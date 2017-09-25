@@ -9,8 +9,11 @@ import (
 	"github.com/golang/protobuf/proto"
 	"log"
 	"time"*/
-	"time"
+	//"time"
 	"fmt"
+	"bufio"
+	"os"
+	"strings"
 )
 
 func main() {
@@ -76,6 +79,7 @@ func main() {
 
 	}
 	*/
+	/*
 	newNodes := kademlia.CreateRandomNetworks(100)
 
 	kademlia.MakeMoreFriends(newNodes, 5)
@@ -83,7 +87,7 @@ func main() {
 	newNodes[0].PrintNetwork()
 	for i,_ := range newNodes {
 		go newNodes[i].Listen()
-	}
+	}*/
 
 
 
@@ -95,7 +99,7 @@ func main() {
 	//go newNodes[1].TestKademliaPing(newNodes[0].GetMyContact())
 	//go newNodes[1].TestKademliaPing(newNodes[2].GetMyContact())
 
-	contacts := newNodes[33].GetMyRoutingTable().FindClosestContacts(kademlia.NewKademliaID("2111111400000000000000000000000000000000"), 6)
+	/*contacts := newNodes[33].GetMyRoutingTable().FindClosestContacts(kademlia.NewKademliaID("2111111400000000000000000000000000000000"), 6)
 	for i := range contacts {
 		fmt.Println(contacts[i].String())
 	}
@@ -115,6 +119,16 @@ func main() {
 		time.Sleep(20 * time.Second)
 		fmt.Println("hello")
 	}
+*/
+
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Println("hello, I am a Kademlia node.")
+	printHelp()
+
+	for scanner.Scan() {
+		processText(scanner.Text())
+
+	}
 
 	/*for i, node := range newNodes {
 		fmt.Println(i)
@@ -125,11 +139,73 @@ func main() {
 
 }
 
+func processText(text string){
+	//fmt.Println(text)
+	//fmt.Println("hello")
+	var words []string = strings.Split(text," ");
 
-func runNode(network *kademlia.Network){
-	network.Listen()
+	var command = words[0]
+	switch command {
+	case "ping":
+		processCommandPing(words)
+		break
+	case "info":
+		processCommandInfo(words)
+		break
+	case "routingTable":
+		processCommandRoutingTable(words)
+		break
+	case "help":
+		break
+	default:
+		fmt.Println("command not found")
+	}
+	printHelp()
 }
 
+func processCommandPing(words []string){
+	if  len(words) != 3 ||
+		(words[1] != "--nodeID" && words[1] != "--nodeIP") {
+		fmt.Println("error PING")
+		return
+	}
+	fmt.Println("sending ping to ", words[2])
+	fmt.Println("***********")
+}
+
+func processCommandInfo(words []string)  {
+	if  len(words) != 1 || words[0] != "info" {
+		fmt.Println("error INFO")
+		return
+	}
+	fmt.Println("my info")
+	fmt.Println("***********")
+}
+
+func processCommandRoutingTable(words []string)  {
+	if  len(words) != 1 || words[0] != "routingTable" {
+		fmt.Println("error routingTable")
+		return
+	}
+	fmt.Println("my routing table")
+	fmt.Println("***********")
+}
+
+func printHelp(){
+	fmt.Println("*****************************************")
+	fmt.Println("This is my help: (write option + enter)")
+	fmt.Println("")
+	fmt.Println("PING make a ping to the selected node")
+	fmt.Println("$ ping --nodeID KademliaID")
+	fmt.Println("$ ping --nodeIP KademliaID")
+	fmt.Println("")
+	fmt.Println("Return info about the current node")
+	fmt.Println("$ info")
+	fmt.Println("")
+	fmt.Println("Return the routing table")
+	fmt.Println("$ routingTable")
+	fmt.Println("*****************************************")
+}
 /*func createRandomNode(){}
 
 func SendPingMessageFake () {
