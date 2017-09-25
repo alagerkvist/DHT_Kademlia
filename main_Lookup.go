@@ -1,8 +1,7 @@
 package main
-
+/*
 import (
 	"./kademlia"
-
 	"time"
 )
 
@@ -26,3 +25,4 @@ func main() {
 
 	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact())
 }
+*/
