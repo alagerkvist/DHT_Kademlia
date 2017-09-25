@@ -4,9 +4,6 @@ FROM nanoservice/protobuf:3.0-alpha
 RUN apk add --update go
 RUN apk add --update git
 
-RUN apk add --update go
-RUN apk add --update git
-
 RUN mkdir -p /go/src
 
 ENV GOPATH /go
