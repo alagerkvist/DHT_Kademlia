@@ -1,14 +1,7 @@
 package main
 
 import (
-	//"time"
-	/*"net"
-	"fmt"
-	"bufio"
-	"github.com/golang/protobuf/proto"
-	"log"
-	"time"*/
-	//"time"
+	
 	"./kademlia"
 	"fmt"
 	"bufio"
@@ -33,7 +26,7 @@ func main() {
 	printHelp()
 
 	for scanner.Scan() {
-		processText(scanner.Text())
+		processText(scanner.Text(), kademlia)
 	}
 }
 
