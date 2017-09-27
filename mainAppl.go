@@ -9,25 +9,34 @@ import (
 	"log"
 	"time"*/
 	//"time"
+	"./kademlia"
 	"fmt"
 	"bufio"
 	"os"
 	"strings"
+	"strconv"
 )
 
 func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
-	
+	numberSrcNodes, _ :=  strconv.Atoi(os.Args[1])
+	ip := os.Args[2]
+	port := "8080"
+
+	var network kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
+	kademlia.AddSourceNodes(&network, numberSrcNodes, ip, port)
+	var kademlia *kademlia.Kademlia = &kademlia.Kademlia{&network}
+
 	printHelp()
 
 	for scanner.Scan() {
-		processText(scanner.Text())
+		processText(scanner.Text(), kademlia)
 	}
 }
 
 
-func processText(text string){
+func processText(text string, kademlia *kademlia.Kademlia){
 	//fmt.Println(text)
 	//fmt.Println("hello")
 	var words []string = strings.Split(text," ");
