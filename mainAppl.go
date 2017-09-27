@@ -18,7 +18,7 @@ import (
 func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Println("hello, I am a Kademlia node.")
+	
 	printHelp()
 
 	for scanner.Scan() {
