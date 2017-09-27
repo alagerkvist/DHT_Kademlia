@@ -4,7 +4,7 @@ services:
     build: .
     tty: true
     expose:
-      - "1234"
+      - "8080/udp"
     networks:
       vpcbr:
         ipv4_address: 10.5.0.21
@@ -13,7 +13,7 @@ services:
     build: .
     tty: true
     expose:
-      - "1234"
+      - "8080/upd"
     networks:
       - vpcbr
     command: go run main.go
