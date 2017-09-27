@@ -4,7 +4,7 @@ import (
 	"strconv"
 )
 
-func CreateRandomNetworks(numberNodes int, ip string, port string) Network{
+func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
 
 	var newNetwork Network = Network{}
 	var newKademliaId *KademliaID = NewRandomKademliaID()
@@ -12,7 +12,7 @@ func CreateRandomNetworks(numberNodes int, ip string, port string) Network{
 	var newContact = NewContact(newKademliaId, ip + ":" + port)
 	newNetwork.myRoutingTable = NewRoutingTable(newContact)
 
-	return newNetwork
+	return &newNetwork
 }
 
 func MakeMoreFriends(network *Network, id int, numberSrcNodes int, ipPrefix string, port string){
@@ -49,8 +49,6 @@ func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 }
 
 
-func AssingNetworkKademlia(networks []Network, kademlias []Kademlia){
-	for i := 0 ; i < len(networks) ; i++{
-		kademlias[i].network =  &networks[i]
-	}
+func AssingNetworkKademlia(networks *Network, kademlia *Kademlia){
+	kademlia.network =  networks
 }

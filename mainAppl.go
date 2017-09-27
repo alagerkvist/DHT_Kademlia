@@ -1,7 +1,7 @@
 package main
 
 import (
-	
+
 	"./kademlia"
 	"fmt"
 	"bufio"
@@ -19,14 +19,16 @@ func main() {
 	ip := getMyIp()
 	port := "8080"
 
-	var network kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
-	kademlia.AddSourceNodes(&network, numberSrcNodes, ip, port)
-	var kademlia *kademlia.Kademlia = &kademlia.Kademlia{&network}
+	var network *kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
+	kademlia.AddSourceNodes(network, numberSrcNodes, ip, port)
+	fmt.Println(network.GetMyRoutingTable().GetMyContact())
+	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
+	kademlia.AssingNetworkKademlia(network, kadem)
 
 	printHelp()
 
 	for scanner.Scan() {
-		processText(scanner.Text(), kademlia)
+		processText(scanner.Text(), kadem)
 	}
 }
 
@@ -50,7 +52,7 @@ func getMyIp() string{
 }
 
 
-func processText(text string, kademlia *kademlia.Kademlia){
+func processText(text string, kadem *kademlia.Kademlia){
 	//fmt.Println(text)
 	//fmt.Println("hello")
 	var words []string = strings.Split(text," ");
