@@ -7,8 +7,8 @@ services:
       - "8080/udp"
     networks:
       vpcbr:
-        ipv4_address: 10.5.0.21
-    command: go run main.go
+        ipv4_address: 10.5.0.20
+    command: go run main.go 0 1 10.5.0. 8080
   web:
     build: .
     tty: true

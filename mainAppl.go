@@ -14,6 +14,8 @@ import (
 	"bufio"
 	"os"
 	"strings"
+	"net"
+
 	"strconv"
 )
 
@@ -21,7 +23,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	numberSrcNodes, _ :=  strconv.Atoi(os.Args[1])
-	ip := os.Args[2]
+	ip := getMyIp()
 	port := "8080"
 
 	var network kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
@@ -31,8 +33,27 @@ func main() {
 	printHelp()
 
 	for scanner.Scan() {
-		processText(scanner.Text(), kademlia)
+		processText(scanner.Text())
 	}
+}
+
+
+func getMyIp() string{
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		os.Stderr.WriteString("Oops: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				//os.Stdout.WriteString(ipnet.IP.String() + "\n")
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
 }
 
 
