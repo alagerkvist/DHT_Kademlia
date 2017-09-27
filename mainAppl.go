@@ -10,22 +10,45 @@ import (
 	"time"*/
 	//"time"
 	"fmt"
-	"bufio"
+	//"bufio"
 	"os"
 	"strings"
+	//"log"
+	"net"
 )
 
 func main() {
 
-	scanner := bufio.NewScanner(os.Stdin)
+	/*scanner := bufio.NewScanner(os.Stdin)
 	
 	printHelp()
 
 	for scanner.Scan() {
 		processText(scanner.Text())
-	}
+	}*/
+
+	var myip string = getMyIp()
+	fmt.Println(myip)
 }
 
+
+func getMyIp() string{
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		os.Stderr.WriteString("Oops: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				//os.Stdout.WriteString(ipnet.IP.String() + "\n")
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
 
 func processText(text string){
 	//fmt.Println(text)
