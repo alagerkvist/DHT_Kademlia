@@ -8,7 +8,7 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.20
-    command: go run main.go 0 1 10.5.0. 8080
+    command: go run mainSourceNodes.go 0 1 10.5.0. 8080
   web:
     build: .
     tty: true
@@ -16,7 +16,7 @@ services:
       - "8080/upd"
     networks:
       - vpcbr
-    command: go run main.go
+    command: go run mainAppl.go 1
 
 networks:
   vpcbr:

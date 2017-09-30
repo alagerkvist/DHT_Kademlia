@@ -1,10 +1,15 @@
 package kademlia
 
+import (
+	"container/list"
+)
+
 const bucketSize = 10
 
 type RoutingTable struct {
 	me      Contact
 	buckets [IDLength * 8]*bucket
+	listTasks *tasksList
 }
 
 func NewRoutingTable(me Contact) *RoutingTable {
@@ -19,14 +24,18 @@ func NewRoutingTable(me Contact) *RoutingTable {
 func (routingTable *RoutingTable) AddContact(contact Contact) {
 	bucketIndex := routingTable.getBucketIndex(contact.ID)
 	bucket := routingTable.buckets[bucketIndex]
+	bucket.mux.Lock()
 	bucket.AddContact(contact)
+	bucket.mux.Unlock()
 }
 
 func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count int) []Contact {
 	var candidates ContactCandidates
 	bucketIndex := routingTable.getBucketIndex(target)
+
 	bucket := routingTable.buckets[bucketIndex]
 
+		bucket.mux.Lock()
 	candidates.Append(bucket.GetContactAndCalcDistance(target))
 
 	for i := 1; (bucketIndex-i >= 0 || bucketIndex+i < IDLength*8) && candidates.Len() < count; i++ {
@@ -39,6 +48,7 @@ func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count 
 			candidates.Append(bucket.GetContactAndCalcDistance(target))
 		}
 	}
+	bucket.mux.Unlock()
 
 	candidates.Sort()
 
@@ -63,6 +73,27 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 }
 
 
+func (routingTable *RoutingTable) RemoveContact(contact Contact){
+	bucketIndex := routingTable.getBucketIndex(contact.ID)
+	bucket := routingTable.buckets[bucketIndex]
+	bucket.mux.Lock()
+	bucket.RemoveContact(contact)
+	bucket.mux.Unlock()
+}
+
 func (routingTable *RoutingTable) GetMyContact() *Contact{
 	return &routingTable.me
+}
+
+
+func (routingTable *RoutingTable) startRoutingTableListener() {
+	routingTable.listTasks = &tasksList{}
+	routingTable.listTasks.list = list.New()
+	routingTable.runWorker()
+}
+
+func (RoutingTable *RoutingTable) createTask(idType int, doneRequest *bool, contactRequested *Contact, contactsReturn []Contact) *Task{
+	task := Task{idType, doneRequest, contactRequested, contactsReturn}
+	RoutingTable.listTasks.list.PushBack(task)
+	return &task
 }

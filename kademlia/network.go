@@ -15,15 +15,9 @@ import (
 
 type Network struct {
 	myRoutingTable *RoutingTable
+
 }
 
-
-func sendResponse(conn *net.UDPConn, addr *net.UDPAddr) {
-	_,err := conn.WriteToUDP([]byte("From server: Hello I got your mesage "), addr)
-	if err != nil {
-		fmt.Printf("Couldn't send response %v", err)
-	}
-}
 
 func (network *Network) Listen() {
 
@@ -53,11 +47,20 @@ func (network *Network) Listen() {
 
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
+
+
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
 
-		fmt.Println(unMarshalMessage.GetMessageSent())
+		//new contact and add it to bucket
+		newContact := &Contact{
+			ID: NewKademliaIDFromBytes(unMarshalMessage.FindID),
+			Address: *unMarshalMessage.Address,
+		}
+		newContact.CalcDistance(network.myRoutingTable.me.ID)
+		network.myRoutingTable.createTask(addContact, nil, newContact, nil)
+
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
@@ -87,13 +90,7 @@ func (network *Network) GetMyRoutingTable() *RoutingTable{
 	return network.myRoutingTable
 }
 
-func unmarshallData(data int) {
-	//newTest := &ProtocolPackage{}
-	//err = proto.Unmarshal(data, newTest)
-	//if err != nil {
-	//	log.Fatal("unmarshaling error: ", err)
-	//}
-}
+
 
 func (network *Network) Sender (marshaledObject []byte, address string) (*ProtocolPackage){
 
@@ -119,7 +116,7 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 		}
 
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
-		network.myRoutingTable.AddContact(*newContact)
+		network.myRoutingTable.createTask(addContact, nil, newContact, nil)
 
 
 		switch unMarshalledResponse.GetMessageSent() {

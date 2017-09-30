@@ -1,15 +1,17 @@
 package main
-/*
+
 import (
 	"./kademlia"
 	"time"
 )
 
 func main() {
-	numberNodes := 15
+
+
+	//numberNodes := 15
 
 	//Creation of the Kademlia nodes
-	kademliaNodes := make([]kademlia.Kademlia, numberNodes)
+	/*kademliaNodes := make([]kademlia.Kademlia, numberNodes)
 	networks  := kademlia.CreateWantedNetwork(numberNodes)
 	//The first node is the new node
 	kademlia.MakeMoreFriends(networks, 10)
@@ -23,6 +25,5 @@ func main() {
 	}
 	time.Sleep(2 * time.Second)
 
-	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact())
+	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact())*/
 }
-*/

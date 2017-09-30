@@ -4,6 +4,7 @@ import (
 	"sync"
 	"fmt"
 	"strconv"
+	"container/list"
 )
 
 const alpha = 3
@@ -158,3 +159,5 @@ func (safeNodeToCheck *SafeNodesCheck) Print() {
 func (kademlia *Kademlia) GetNetwork() *Network{
 	return kademlia.network
 }
+
+
