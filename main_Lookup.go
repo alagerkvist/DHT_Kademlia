@@ -3,7 +3,6 @@ package main
 import (
 	"./kademlia"
 	"time"
-	"fmt"
 )
 
 func main() {
@@ -27,8 +26,9 @@ func main() {
 		go kademliaNodes[i].GetNetwork().GetMyRoutingTable().StartRoutingTableListener()
 		go kademliaNodes[i].GetNetwork().Listen()
 	}
-	fmt.Println("ok")
 	time.Sleep(2 * time.Second)
 
-	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact())
+	//kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+	kademliaNodes[0].Store("kademlia/bucket.go")
+
 }

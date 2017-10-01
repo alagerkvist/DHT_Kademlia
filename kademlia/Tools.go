@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"fmt"
 	"math/rand"
+	"encoding/base64"
 )
 
 func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
@@ -65,6 +66,7 @@ func CreateWantedNetworkPrev(numberNodes int) []Network{
 		number := 1234 + i
 		var newContact = NewContact(NewKademliaID(ids[i]), "127.0.0.1:" + strconv.Itoa(number))
 		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
+		newNetworks[i].fileManager = &FileManager{&base64.Encoding{}}
 
 	}
 

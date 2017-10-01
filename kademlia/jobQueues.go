@@ -21,7 +21,7 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 	for {
 		task := <-taskChannel
 
-		task.Print()
+		//task.Print()
 
 		switch task.idType {
 		case lookUpContact:
