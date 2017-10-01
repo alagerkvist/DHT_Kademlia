@@ -3,13 +3,11 @@ package kademlia
 import (
 	"container/list"
 	"fmt"
-	"sync"
 )
 
 type bucket struct {
 	list *list.List
 	cacheList *list.List
-	mux sync.Mutex
 }
 
 func newBucket() *bucket {

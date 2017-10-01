@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-const alpha = 1
+const alpha = 3
 
 type Kademlia struct {
 	network *Network
@@ -33,7 +33,9 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	var counterThreadsDone = 0
 
 	//Fulfill this array with at most the k nodes from buckets
-	var firstContacts []Contact = kademlia.network.myRoutingTable.FindClosestContacts(target.ID, bucketSize)
+	responseChannel := make(chan []Contact)
+	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{target.ID, "", nil})
+	firstContacts := <- responseChannel
 
 
 	fmt.Println("\n--- Contacts to join: ")
@@ -42,11 +44,6 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
 	fmt.Println("---")
-
-	//Test with one
-	//wg.Add(1)
-	//safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, target.ID)
-
 
 	//Start sending rpc nodes -> wait method
 	for {
@@ -72,7 +69,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 //LookupContact is a method of KAdemlia to locate some Data
 //PArams hash: it is the finded data with the 160 bits hash
 func (kademlia *Kademlia) LookupData(hash string) {
-	// TODO
+
 }
 
 //Store is the method of KAdemlia to Store data

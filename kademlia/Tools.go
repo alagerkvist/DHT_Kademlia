@@ -54,18 +54,24 @@ func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 func AssingNetworkKademlia(networks *Network, kademlia *Kademlia){
 	kademlia.network =  networks
 }
-
-func CreateRandomNetworksPrev(numberNodes int) []Network{
+func CreateWantedNetworkPrev(numberNodes int) []Network{
 	var newNetworks []Network = make([]Network, numberNodes)
-	fmt.Println("creating")
-	for i:= 0 ; i < numberNodes ; i++ {
-		var newKademliaId *KademliaID = NewRandomKademliaID()
+	var ids []string = make([]string, numberNodes)
+
+	//creation of the ids
+	for i := 0 ; i < numberNodes ; i++{
+		hexad := fmt.Sprintf("%x", i)
+		ids[i] = "1111111" + hexad + "00000000000000000000000000000000"
 		number := 1234 + i
-		var newContact = NewContact(newKademliaId, "127.0.0.1:" + strconv.Itoa(number))
+		var newContact = NewContact(NewKademliaID(ids[i]), "127.0.0.1:" + strconv.Itoa(number))
 		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
+
 	}
+
 	return newNetworks
+
 }
+
 
 func MakeMoreFriendsPrev(nodeToMakeFriends []Network, newFriends int){
 	for j := 0 ; j < len(nodeToMakeFriends) ; j++{
