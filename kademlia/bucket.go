@@ -74,13 +74,13 @@ func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
 	return contacts
 }
 
-func(bucket *bucket) findElementInList(contact Contact, list *list.List) *list.Element{
+func(bucket *bucket) findElementInList(contact Contact, ls *list.List) *list.Element{
 	//create a element variable
 	var element *list.Element
 	//this is to iterate over a list
 	//list.front() returns the first element of a list
 
-	for e := list.Front(); e != nil; e = e.Next() {
+	for e := ls.Front(); e != nil; e = e.Next() {
 		nodeID := e.Value.(Contact).ID
 
 		if (contact).ID.Equals(nodeID) {

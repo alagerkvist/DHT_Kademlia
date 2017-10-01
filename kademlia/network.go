@@ -48,6 +48,7 @@ func (network *Network) Listen() {
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 
+		fmt.Println(p)
 
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
@@ -59,7 +60,7 @@ func (network *Network) Listen() {
 			Address: *unMarshalMessage.Address,
 		}
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
-		network.myRoutingTable.createTask(addContact, nil, newContact, nil)
+		go network.myRoutingTable.AddContact(*newContact)
 
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
@@ -116,8 +117,7 @@ func (network *Network) Sender (marshaledObject []byte, address string) (*Protoc
 		}
 
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
-		network.myRoutingTable.createTask(addContact, nil, newContact, nil)
-
+		go network.myRoutingTable.AddContact(*newContact)
 
 		switch unMarshalledResponse.GetMessageSent() {
 		case ProtocolPackage_PING:
@@ -175,7 +175,7 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
 
-	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize)
+	kclosetContacts := network.myRoutingTable.lookUpContactRequest(NewKademliaIDFromBytes(protocolPackage.FindID))
 
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
 
@@ -313,3 +313,5 @@ func (network *Network) TestKademliaPing(contact *Contact) {
 		go network.SendPingMessage(contact)
 	}
 }
+
+

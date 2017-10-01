@@ -3,7 +3,6 @@ package kademlia
 import (
 	"container/list"
 	"fmt"
-	"github.com/RichardKnop/machinery/v1/tasks"
 )
 
 type Task struct {

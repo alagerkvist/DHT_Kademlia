@@ -2,6 +2,7 @@ package kademlia
 
 import (
 	"container/list"
+	"fmt"
 )
 
 const bucketSize = 10
@@ -34,17 +35,20 @@ func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count 
 	bucketIndex := routingTable.getBucketIndex(target)
 
 	bucket := routingTable.buckets[bucketIndex]
-
-		bucket.mux.Lock()
+	bucket.mux.Lock()
 	candidates.Append(bucket.GetContactAndCalcDistance(target))
 
 	for i := 1; (bucketIndex-i >= 0 || bucketIndex+i < IDLength*8) && candidates.Len() < count; i++ {
 		if bucketIndex-i >= 0 {
+			bucket.mux.Unlock()
 			bucket = routingTable.buckets[bucketIndex-i]
+			bucket.mux.Lock()
 			candidates.Append(bucket.GetContactAndCalcDistance(target))
 		}
 		if bucketIndex+i < IDLength*8 {
+			bucket.mux.Unlock()
 			bucket = routingTable.buckets[bucketIndex+i]
+			bucket.mux.Lock()
 			candidates.Append(bucket.GetContactAndCalcDistance(target))
 		}
 	}
@@ -86,14 +90,25 @@ func (routingTable *RoutingTable) GetMyContact() *Contact{
 }
 
 
-func (routingTable *RoutingTable) startRoutingTableListener() {
+func (routingTable *RoutingTable) StartRoutingTableListener() {
 	routingTable.listTasks = &tasksList{}
 	routingTable.listTasks.list = list.New()
 	routingTable.runWorker()
 }
 
-func (RoutingTable *RoutingTable) createTask(idType int, doneRequest *bool, contactRequested *Contact, contactsReturn []Contact) *Task{
-	task := Task{idType, doneRequest, contactRequested, contactsReturn}
-	RoutingTable.listTasks.list.PushBack(task)
-	return &task
+func (routingTable *RoutingTable) createTask(idType int, doneRequest *bool, contactRequested *Contact, contactsReturn []Contact) *Task{
+	var task *Task = &Task{idType, doneRequest, contactRequested, contactsReturn}
+	fmt.Println(task)
+	routingTable.listTasks.list.PushBack(task)
+	return task
+}
+
+func (routingTable *RoutingTable) lookUpContactRequest(kademliaId *KademliaID) []Contact{
+	receivedContact := make([]Contact, bucketSize)
+	endRequest := false
+	for !endRequest{
+		routingTable.createTask(lookUpContact, &endRequest, &Contact{kademliaId, "", nil}, receivedContact)
+	}
+
+	return receivedContact
 }

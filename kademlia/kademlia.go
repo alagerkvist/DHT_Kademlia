@@ -4,10 +4,9 @@ import (
 	"sync"
 	"fmt"
 	"strconv"
-	"container/list"
 )
 
-const alpha = 3
+const alpha = 1
 
 type Kademlia struct {
 	network *Network
@@ -36,10 +35,10 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	//Fulfill this array with at most the k nodes from buckets
 	var firstContacts []Contact = kademlia.network.myRoutingTable.FindClosestContacts(target.ID, bucketSize)
 
+
 	fmt.Println("\n--- Contacts to join: ")
 	for i:=0 ; i<len(firstContacts) ; i++ {
 		fmt.Println(firstContacts[i].String())
-
 		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
 	fmt.Println("---")
@@ -51,7 +50,7 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 
 	//Start sending rpc nodes -> wait method
 	for {
-		if nbRunningThreads <= alpha {
+		if nbRunningThreads < alpha {
 			wg.Add(1)
 			counterThreadsDone++
 			nbRunningThreads++
@@ -100,6 +99,7 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 			fmt.Println("Target: "+ targetID.String() +"\n***\n")
 
 			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact, targetID)
+
 
 			/*fmt.Println("\n%%%% Before adding: ")
 			safeNodesCheck.Print()

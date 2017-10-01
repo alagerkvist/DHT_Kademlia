@@ -2,6 +2,8 @@ package kademlia
 
 import (
 	"strconv"
+	"fmt"
+	"math/rand"
 )
 
 func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
@@ -51,4 +53,36 @@ func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 
 func AssingNetworkKademlia(networks *Network, kademlia *Kademlia){
 	kademlia.network =  networks
+}
+
+func CreateRandomNetworksPrev(numberNodes int) []Network{
+	var newNetworks []Network = make([]Network, numberNodes)
+	fmt.Println("creating")
+	for i:= 0 ; i < numberNodes ; i++ {
+		var newKademliaId *KademliaID = NewRandomKademliaID()
+		number := 1234 + i
+		var newContact = NewContact(newKademliaId, "127.0.0.1:" + strconv.Itoa(number))
+		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
+	}
+	return newNetworks
+}
+
+func MakeMoreFriendsPrev(nodeToMakeFriends []Network, newFriends int){
+	for j := 0 ; j < len(nodeToMakeFriends) ; j++{
+
+		for i := 0 ; i < newFriends ; i++{
+			random := j
+			for random == j{
+				random = rand.Intn(len(nodeToMakeFriends))
+			}
+			nodeToMakeFriends[j].myRoutingTable.AddContact(nodeToMakeFriends[random].myRoutingTable.me)
+		}
+	}
+}
+
+
+func AssingNetworkKademliaPrev(networks []Network, kademlias []Kademlia){
+	for i := 0 ; i < len(networks) ; i++{
+		kademlias[i].network =  &networks[i]
+	}
 }
