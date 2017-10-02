@@ -53,7 +53,7 @@ func (network *Network) Listen() {
 
 		//new contact and add it to bucket
 		newContact := &Contact{
-			ID: NewKademliaIDFromBytes(unMarshalMessage.FindID),
+			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
 			Address: *unMarshalMessage.Address,
 		}
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
@@ -113,6 +113,7 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
 
 	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize)
+	//fmt.Println(kclosetContacts)
 
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
 
@@ -262,10 +263,10 @@ func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Respo
 		}
 
 		newCandidates.Append(newContacts)
-		return Response{newCandidates, nil}
+		return Response{newCandidates, nil, nil}
 	}
 
-	return Response{nil, result.File}
+	return Response{nil, result.File, contact}
 }
 
 func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*ProtocolPackage) {

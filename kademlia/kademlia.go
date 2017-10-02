@@ -32,6 +32,7 @@ type Request struct{
 type Response struct{
 	newContacts *ContactCandidates
 	data *string
+	hasData *Contact
 }
 
 //LookupContact is a method of Kademlia to locate some Node
@@ -149,6 +150,8 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 	channelToSendRequest := make(chan Request, alpha)
 	channelToReceive := make(chan Response)
 	nodesToCheck := make([]NodeToCheck, 0, bucketSize)
+	countEndThread := 0
+	contactWithFiles := []Contact{}
 
 	//Fulfill this array with at most the k nodes from buckets
 	responseChannel := make(chan []Contact)
@@ -167,11 +170,36 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 
 	for {
 		newResponse := <- channelToReceive
+
 		//Receive data
-		if(newResponse.newContacts == nil){
+		if newResponse.newContacts == nil{
 			fmt.Println("response: " + *newResponse.data)
+			contactWithFiles = append(contactWithFiles, *newResponse.hasData)
 			kademlia.network.fileManager.checkAndStore(fileName, *newResponse.data)
+
+			for i := 1 ; i < alpha ; i++{
+				//Get the last responses and check if they have the file
+				newResponse := <- channelToReceive
+				fmt.Println(newResponse)
+				if newResponse.newContacts == nil{
+					contactWithFiles = append(contactWithFiles, *newResponse.hasData)
+				}
+			}
 			sendEndWork(channelToSendRequest, alpha)
+
+			for i:=0 ; i < len(nodesToCheck) ; i++{
+				canSend := false
+				for j:= 0 ; j < len(contactWithFiles) ; j++ {
+					if nodesToCheck[i].contact.ID.Equals(contactWithFiles[j].ID) {
+						canSend = true
+					}
+				}
+				if(canSend){
+					kademlia.network.marshalStore(fileName, *newResponse.data, nodesToCheck[i].contact)
+					break
+				}
+			}
+
 			break
 		}
 
@@ -199,15 +227,20 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 			}
 		}
 
-		//No nodes with this data
 		nextContactToCheck :=  kademlia.network.getNextContactToAsk(nodesToCheck)
+		//Check if still some work to do, if it is not wait until all the workers finish
 		if nextContactToCheck == nil{
-			fmt.Println("Impossible to find the file in the network")
-			Print(nodesToCheck)
-			sendEndWork(channelToSendRequest, alpha)
-			break
+			countEndThread++
+			if countEndThread == alpha {
+				fmt.Println("Impossible to find the file in the network")
+				//Print(nodesToCheck)
+				sendEndWork(channelToSendRequest, alpha)
+				break
+			}
+		} else {
+			countEndThread = 0
+			channelToSendRequest <- Request{nextContactToCheck, false}
 		}
-		channelToSendRequest <- Request{kademlia.network.getNextContactToAsk(nodesToCheck), false}
 	}
 
 
@@ -228,6 +261,8 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 		if(request.endWork){
 			break
 		}
+		fmt.Print("request: ")
+		fmt.Println(request.contact)
 		responseChannel <- network.SendFindDataValue(targetId, request.contact)
 	}
 }
