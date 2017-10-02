@@ -4,6 +4,8 @@ import (
 	"sync"
 	"fmt"
 	"strconv"
+	"crypto/sha256"
+	"encoding/base64"
 )
 
 const alpha = 3
@@ -22,9 +24,20 @@ type SafeNodesCheck struct {
 	mux sync.Mutex
 }
 
+type Request struct{
+	contact *Contact
+	endWork bool
+}
+
+type Response struct{
+	newContacts *ContactCandidates
+	data *string
+	hasData *Contact
+}
+
 //LookupContact is a method of Kademlia to locate some Node
 //Params target: it is the finded contact
-func (kademlia *Kademlia) LookupContact(target *Contact) {
+func (kademlia *Kademlia) LookupContact(targetId *KademliaID) []NodeToCheck{
 	//Creation of the shared array
 	var safeNodesToCheck = SafeNodesCheck{nodesToCheck: make([]NodeToCheck, 0, bucketSize)}
 	var noMoreToCheck bool
@@ -33,28 +46,24 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 	var counterThreadsDone = 0
 
 	//Fulfill this array with at most the k nodes from buckets
-	var firstContacts []Contact = kademlia.network.myRoutingTable.FindClosestContacts(target.ID, bucketSize)
+	responseChannel := make(chan []Contact)
+	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{targetId, "", nil})
+	firstContacts := <- responseChannel
 
-	fmt.Println("\n--- Contacts to join: ")
+	//fmt.Println("\n--- Contacts to join: ")
 	for i:=0 ; i<len(firstContacts) ; i++ {
-		fmt.Println(firstContacts[i].String())
-
+		//fmt.Println(firstContacts[i].String())
 		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
-	fmt.Println("---")
-
-	//Test with one
-	//wg.Add(1)
-	//safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, target.ID)
-
+	//fmt.Println("---")
 
 	//Start sending rpc nodes -> wait method
 	for {
-		if nbRunningThreads <= alpha {
+		if nbRunningThreads < alpha {
 			wg.Add(1)
 			counterThreadsDone++
 			nbRunningThreads++
-			go safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, target.ID)
+			go safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, targetId)
 		}
 
 		//Stop the infinite loop when get all the information needed
@@ -66,21 +75,8 @@ func (kademlia *Kademlia) LookupContact(target *Contact) {
 		}
 	}
 
-	safeNodesToCheck.Print()
+	return safeNodesToCheck.nodesToCheck
 }
-
-//LookupContact is a method of KAdemlia to locate some Data
-//PArams hash: it is the finded data with the 160 bits hash
-func (kademlia *Kademlia) LookupData(hash string) {
-	// TODO
-}
-
-//Store is the method of KAdemlia to Store data
-// Params: data array of Bytes.
-func (kademlia *Kademlia) Store(data []byte) {
-	// TODO
-}
-
 
 /*
 *	Send RPC_NODE RPC and add new contacts to the array, check if need to end the loop.
@@ -95,35 +91,31 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
 			safeNodesCheck.mux.Unlock()
 
-			fmt.Println("\n*** Ask to: " + safeNodesCheck.nodesToCheck[i].contact.String())
-			fmt.Println("Target: "+ targetID.String() +"\n***\n")
+			//fmt.Println("\n*** Ask to: " + safeNodesCheck.nodesToCheck[i].contact.String())
+			//fmt.Println("Target: "+ targetID.String() +"\n***\n")
 
 			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact, targetID)
 
-			/*fmt.Println("\n%%%% Before adding: ")
-			safeNodesCheck.Print()
-			fmt.Println("\n%%%")
-			*/
 			//insertion of the new one
 			safeNodesCheck.mux.Lock()
 			for i:=0 ; i<newContacts.Len() ; i++{
 				//fmt.Println("Contact to add: " + newContacts.contacts[i].String())
 
 				for j:=0 ; j<bucketSize ; j++{
-
-
-					//case of less than k values
-					if j >= len(safeNodesCheck.nodesToCheck) {
-						safeNodesCheck.nodesToCheck = append(safeNodesCheck.nodesToCheck, NodeToCheck{&newContacts.contacts[i], false})
-						break;
-					} else if newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID){
-						break;
-					} else if  newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact){
-						//Shift value of the array and insert the new one
-						copy(safeNodesCheck.nodesToCheck[j+1:], safeNodesCheck.nodesToCheck[j: len(safeNodesCheck.nodesToCheck) - 1])
-						safeNodesCheck.nodesToCheck[j].contact = &(newContacts.contacts[i])
-						safeNodesCheck.nodesToCheck[j].alreadyChecked = false
-						break;
+					if !newContacts.contacts[i].ID.Equals(network.myRoutingTable.me.ID){
+						//case of less than k values
+						if j >= len(safeNodesCheck.nodesToCheck) {
+							safeNodesCheck.nodesToCheck = append(safeNodesCheck.nodesToCheck, NodeToCheck{&newContacts.contacts[i], false})
+							break;
+						} else if newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID){
+							break;
+						} else if  newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact){
+							//Shift value of the array and insert the new one
+							copy(safeNodesCheck.nodesToCheck[j+1:], safeNodesCheck.nodesToCheck[j: len(safeNodesCheck.nodesToCheck) - 1])
+							safeNodesCheck.nodesToCheck[j].contact = &(newContacts.contacts[i])
+							safeNodesCheck.nodesToCheck[j].alreadyChecked = false
+							break;
+						}
 					}
 				}
 			}
@@ -149,12 +141,175 @@ func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network
 	return
 }
 
-func (safeNodeToCheck *SafeNodesCheck) Print() {
-	for i:=0 ; i < len(safeNodeToCheck.nodesToCheck) ; i++{
-		fmt.Println(safeNodeToCheck.nodesToCheck[i].contact.String() + "  alrdyChecked: " + strconv.FormatBool(safeNodeToCheck.nodesToCheck[i].alreadyChecked))
+
+
+//LookupContact is a method of KAdemlia to locate some Data
+//PArams hash: it is the finded data with the 160 bits hash
+func (kademlia *Kademlia) LookupData(fileName string) {
+	targetID := NewKademliaID(fileName)
+	channelToSendRequest := make(chan Request, alpha)
+	channelToReceive := make(chan Response)
+	nodesToCheck := make([]NodeToCheck, 0, bucketSize)
+	countEndThread := 0
+	contactWithFiles := []Contact{}
+
+	//Fulfill this array with at most the k nodes from buckets
+	responseChannel := make(chan []Contact)
+	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{targetID, "", nil})
+	firstContacts := <- responseChannel
+
+	for i:=0 ; i<len(firstContacts) ; i++ {
+		nodesToCheck = append(nodesToCheck, NodeToCheck{&firstContacts[i], false})
+	}
+
+	for i := 0 ; i < alpha ; i++ {
+		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive)
+		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
+		nodesToCheck[i].alreadyChecked = true
+	}
+
+	for {
+		newResponse := <- channelToReceive
+
+		//Receive data
+		if newResponse.newContacts == nil{
+			fmt.Println("response: " + *newResponse.data)
+			contactWithFiles = append(contactWithFiles, *newResponse.hasData)
+			kademlia.network.fileManager.checkAndStore(fileName, *newResponse.data)
+
+			for i := 1 ; i < alpha ; i++{
+				//Get the last responses and check if they have the file
+				newResponse := <- channelToReceive
+				fmt.Println(newResponse)
+				if newResponse.newContacts == nil{
+					contactWithFiles = append(contactWithFiles, *newResponse.hasData)
+				}
+			}
+			sendEndWork(channelToSendRequest, alpha)
+
+			for i:=0 ; i < len(nodesToCheck) ; i++{
+				canSend := false
+				for j:= 0 ; j < len(contactWithFiles) ; j++ {
+					if nodesToCheck[i].contact.ID.Equals(contactWithFiles[j].ID) {
+						canSend = true
+					}
+				}
+				if(canSend){
+					kademlia.network.marshalStore(fileName, *newResponse.data, nodesToCheck[i].contact)
+					break
+				}
+			}
+
+			break
+		}
+
+		newContacts := newResponse.newContacts
+
+		for i:=0 ; i<newContacts.Len() ; i++{
+			//fmt.Println("Contact to add: " + newContacts.contacts[i].String())
+
+			for j:=0 ; j<bucketSize ; j++{
+				if !newContacts.contacts[i].ID.Equals(kademlia.network.myRoutingTable.me.ID){
+					//case of less than k values
+					if j >= len(nodesToCheck) {
+						nodesToCheck = append(nodesToCheck, NodeToCheck{&newContacts.contacts[i], false})
+						break;
+					} else if newContacts.contacts[i].ID.Equals(nodesToCheck[j].contact.ID){
+						break;
+					} else if  newContacts.contacts[i].Less(nodesToCheck[j].contact){
+						//Shift value of the array and insert the new one
+						copy(nodesToCheck[j+1:], nodesToCheck[j: len(nodesToCheck) - 1])
+						nodesToCheck[j].contact = &(newContacts.contacts[i])
+						nodesToCheck[j].alreadyChecked = false
+						break;
+					}
+				}
+			}
+		}
+
+		nextContactToCheck :=  kademlia.network.getNextContactToAsk(nodesToCheck)
+		//Check if still some work to do, if it is not wait until all the workers finish
+		if nextContactToCheck == nil{
+			countEndThread++
+			if countEndThread == alpha {
+				fmt.Println("Impossible to find the file in the network")
+				//Print(nodesToCheck)
+				sendEndWork(channelToSendRequest, alpha)
+				break
+			}
+		} else {
+			countEndThread = 0
+			channelToSendRequest <- Request{nextContactToCheck, false}
+		}
+	}
+
+
+}
+
+
+func sendEndWork(channelToSendRequest chan Request, nb int){
+	for i := 0 ; i < alpha ; i++{
+		channelToSendRequest <- Request{nil, true}
+	}
+}
+
+
+func(network *Network) workerFindData(requestsChannel chan Request, targetId KademliaID, responseChannel chan Response) {
+
+	for {
+		request := <- requestsChannel
+		if(request.endWork){
+			break
+		}
+		fmt.Print("request: ")
+		fmt.Println(request.contact)
+		responseChannel <- network.SendFindDataValue(targetId, request.contact)
+	}
+}
+
+
+func (network *Network) getNextContactToAsk(nodesToCheck []NodeToCheck) *Contact{
+	for i:=0 ; i < len(nodesToCheck) ; i++ {
+		if !nodesToCheck[i].alreadyChecked && !nodesToCheck[i].contact.ID.Equals(network.myRoutingTable.me.ID) {
+			nodesToCheck[i].alreadyChecked = true
+			return nodesToCheck[i].contact
+		}
+	}
+	return nil
+}
+
+
+//Store is the method of KAdemlia to Store data
+// Params: data array of Bytes.
+func (kademlia *Kademlia) Store(fileName string) {
+	fileManager := kademlia.network.fileManager
+
+	if !fileManager.checkIfFileExist(fileName){
+		fmt.Println("File not found")
+	}else {
+		data := fileManager.readData(fileName)
+		base64Data := base64.StdEncoding.EncodeToString(data[:])
+
+		//Generate a hash for the name of the file
+		hash := sha256.Sum256(data)
+		idFile := NewKademliaIDFromBytes(hash[:IDLength])
+
+		fileManager.checkAndStore(idFile.String(), base64Data)
+
+		contactToSend := kademlia.LookupContact(idFile)
+		fmt.Println(contactToSend)
+		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
+	}
+}
+
+func Print(nodesToCheck []NodeToCheck) {
+	for i:=0 ; i < len(nodesToCheck) ; i++{
+		fmt.Println(nodesToCheck[i].contact.String() + "  alrdyChecked: " + strconv.FormatBool(nodesToCheck[i].alreadyChecked))
 	}
 }
 
 func (kademlia *Kademlia) GetNetwork() *Network{
 	return kademlia.network
 }
+
+

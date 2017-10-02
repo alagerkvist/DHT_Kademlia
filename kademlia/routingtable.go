@@ -1,10 +1,16 @@
 package kademlia
 
+import (
+
+)
+
 const bucketSize = 10
+const nb_task_managed = 100
 
 type RoutingTable struct {
 	me      Contact
 	buckets [IDLength * 8]*bucket
+	channelTasks chan Task
 }
 
 func NewRoutingTable(me Contact) *RoutingTable {
@@ -25,8 +31,8 @@ func (routingTable *RoutingTable) AddContact(contact Contact) {
 func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count int) []Contact {
 	var candidates ContactCandidates
 	bucketIndex := routingTable.getBucketIndex(target)
-	bucket := routingTable.buckets[bucketIndex]
 
+	bucket := routingTable.buckets[bucketIndex]
 	candidates.Append(bucket.GetContactAndCalcDistance(target))
 
 	for i := 1; (bucketIndex-i >= 0 || bucketIndex+i < IDLength*8) && candidates.Len() < count; i++ {
@@ -63,6 +69,25 @@ func (routingTable *RoutingTable) getBucketIndex(id *KademliaID) int {
 }
 
 
+func (routingTable *RoutingTable) RemoveContact(contact Contact){
+	bucketIndex := routingTable.getBucketIndex(contact.ID)
+	bucket := routingTable.buckets[bucketIndex]
+	bucket.RemoveContact(contact)
+}
+
 func (routingTable *RoutingTable) GetMyContact() *Contact{
 	return &routingTable.me
 }
+
+
+func (routingTable *RoutingTable) StartRoutingTableListener() {
+	routingTable.channelTasks = make(chan Task, nb_task_managed)
+	go routingTable.runWorker(routingTable.channelTasks)
+}
+
+func (routingTable *RoutingTable) createTask(idType int, responseChannel chan []Contact, contactRequested *Contact) *Task{
+	var task Task = Task{idType, responseChannel, contactRequested}
+	routingTable.channelTasks <- task
+	return &task
+}
+
