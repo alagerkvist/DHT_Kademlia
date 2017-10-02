@@ -11,12 +11,15 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"encoding/base64"
 )
 
 type Network struct {
 	myRoutingTable *RoutingTable
 	fileManager *FileManager
 }
+
+const packetSize = 4096
 
 
 func (network *Network) Listen() {
@@ -26,7 +29,7 @@ func (network *Network) Listen() {
 	ipAndPort := strings.Split(network.myRoutingTable.me.Address, ":")
 	port, err := strconv.Atoi(ipAndPort[1])
 
-	p := make([]byte, 4096)
+	p := make([]byte, packetSize)
 
 	addr := net.UDPAddr{
 		Port: port,
@@ -73,8 +76,8 @@ func (network *Network) Listen() {
 
 			break;
 		case ProtocolPackage_FINDVALUE:
-			//TODO process FindValue
-			//fmt.Printf("find value")
+			network.processFindValue(unMarshalMessage, remoteaddr, ser)
+
 			break;
 
 		}
@@ -129,7 +132,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 	}
 	marshalledNodesPacket, err := proto.Marshal(responsePkg)
 	if err == nil {
-		fmt.Println("\n\n Response will be send from: " + network.myRoutingTable.me.String() + " about closest nodes\n")
+		fmt.Println("Response will be send from: " + network.myRoutingTable.me.String() + " about closest nodes")
 		_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
 		if err != nil {
 			fmt.Printf("Couldn't send response %v", err)
@@ -147,11 +150,43 @@ func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, re
 	network.fileManager.checkAndStore(*id, *base64File)
 }
 
+func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
+	var id string = NewKademliaIDFromBytes(protocolPackage.FindValue).String()
+
+	if !network.fileManager.checkIfFileExist(filesDirectory + id){
+		network.processFindConctactMessage(protocolPackage, remoteaddr, ser)
+	} else {
+		typeOfMessage := ProtocolPackage_FINDVALUE
+
+		file := base64.StdEncoding.EncodeToString(network.fileManager.readData(filesDirectory + id))
+
+		responsePkg := &ProtocolPackage{
+			Address: &network.myRoutingTable.me.Address,
+			MessageSent: &typeOfMessage,
+			ContactsKNearest: nil,
+			File: &file,
+		}
+
+		marshalledNodesPacket, err := proto.Marshal(responsePkg)
+		if err == nil {
+			fmt.Println("Response will be send from: " + network.myRoutingTable.me.String() + " about a file")
+			_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
+			if err != nil {
+				fmt.Printf("Couldn't send response %v", err)
+			}
+
+		}else {
+			log.Fatal("marshaling find contact response error: ", err)
+		}
+	}
+}
 
 
-func (network *Network) Sender (marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
-	p :=  make([]byte, 2048)
+
+func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
+
+	p :=  make([]byte, packetSize)
 	conn, err := net.Dial("udp", address)
 
 	if err != nil {
@@ -168,7 +203,7 @@ func (network *Network) Sender (marshaledObject []byte, address string, answerWa
 			err = proto.Unmarshal(p[:n], unMarshalledResponse)
 
 			//new contact and add it to bucket
-			fmt.Println(unMarshalledResponse)
+			//fmt.Println(unMarshalledResponse)
 			newContact := &Contact{
 				ID:      NewKademliaIDFromBytes(unMarshalledResponse.ClientID),
 				Address: address,
@@ -210,16 +245,51 @@ func (network *Network) Sender (marshaledObject []byte, address string, answerWa
 
 
 
-func SendFindDataMessage()  {
+func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Response{
 
+	result := network.marshalFindValue(id, contact)
+
+
+	if result.ContactsKNearest != nil{
+		newCandidates := &ContactCandidates{}
+		newContacts := make([]Contact, len(result.ContactsKNearest))
+
+		for i := 0 ; i < len(result.ContactsKNearest) ; i++{
+			//Create the new contact
+			newContacts[i] = NewContact(NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), *result.ContactsKNearest[i].Address)
+			newContacts[i].distance = NewKademliaIDFromBytes(result.ContactsKNearest[i].Distance)
+			//fmt.Println(newContacts[i].String())
+		}
+
+		newCandidates.Append(newContacts)
+		return Response{newCandidates, nil}
+	}
+
+	return Response{nil, result.File}
 }
 
+func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*ProtocolPackage) {
+	typeOfMessage := ProtocolPackage_FINDVALUE
+
+	marshalPackage := &ProtocolPackage{
+		ClientID: network.myRoutingTable.me.ID.getBytes(),
+		Address: proto.String(network.myRoutingTable.me.Address),
+		MessageSent: &typeOfMessage,
+		FindValue: id.getBytes(),
+	}
+
+	data, err := proto.Marshal(marshalPackage)
+
+	if err != nil {
+		log.Fatal("marshaling error: ", err)
+	}
+	return network.Sender(data, contact.Address, true)
+}
 
 
 
 func (network *Network) SendPingMessage(contact *Contact) {
 	network.marshalPing(contact)
-	//fmt.Println(result.Address)
 }
 
 func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
@@ -240,7 +310,6 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 
 
 func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) *ContactCandidates{
-
 	result := network.marshalFindContact(findThisID, contact)
 	//fmt.Println(len(result.ContactsKNearest))
 
@@ -266,7 +335,6 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 	// fmt.Println("Marshal: target " + findThisID.String() + "  ask to " + contact.String() + "\n")
 
 	typeOfMessage := ProtocolPackage_FINDNODE
-	fmt.Println(network.myRoutingTable.me)
 	marshalPackage := &ProtocolPackage{
 		ClientID: network.myRoutingTable.me.ID.getBytes(),
 		Address: proto.String(network.myRoutingTable.me.Address),
@@ -283,12 +351,6 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 }
 
 
-
-func (network *Network) SendFindDataMessage(hash string) {
-	// TODO
-	// Serialize
-
-}
 
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
 

@@ -18,7 +18,7 @@ func (f *FileManager) checkAndStore(fileName string, data string) {
 
 
 	if os.IsNotExist(err){
-		d1, err := f.encoder.DecodeString(data)
+		d1, err := base64.StdEncoding.DecodeString(data)
 		if err != nil{
 			fmt.Println("Error while decoding file")
 		}
