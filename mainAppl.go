@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"./kademlia"
 	"fmt"
 	"bufio"
@@ -24,6 +23,8 @@ func main() {
 	fmt.Println(network.GetMyRoutingTable().GetMyContact())
 	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
 	kademlia.AssingNetworkKademlia(network, kadem)
+
+	go network.Listen()
 
 	printHelp()
 
@@ -60,7 +61,7 @@ func processText(text string, kadem *kademlia.Kademlia){
 	var command = words[0]
 	switch command {
 	case "ping":
-		processCommandPing(words)
+		processCommandPing(words, kadem)
 		break
 	case "info":
 		processCommandInfo(words)
@@ -76,9 +77,13 @@ func processText(text string, kadem *kademlia.Kademlia){
 	printHelp()
 }
 
-func processCommandPing(words []string){
+func processCommandPing(words []string, kadem *kademlia.Kademlia){
 	if  len(words) != 3 ||
 		(words[1] != "--nodeID" && words[1] != "--nodeIP") {
+		newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
+		kamId := kademlia.NewKademliaID(newKademliaID)
+		var newContact *kademlia.Contact = &kademlia.NewContact(kamId, "10.5.0.21:8080")
+		kadem.GetNetwork().SendPingMessage(newContact)
 		fmt.Println("error PING")
 		return
 	}

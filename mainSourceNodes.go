@@ -4,6 +4,8 @@ import (
 	"os"
 	"./kademlia"
 	"strconv"
+	"time"
+	"fmt"
 )
 
 func main() {
@@ -15,7 +17,11 @@ func main() {
 	port := os.Args[4]
 	var network *kademlia.Network = kademlia.CreateWantedNetwork(id, prefixIp, port)
 	kademlia.MakeMoreFriends(network, id, numberSrcNodes, prefixIp, port)
-	network.Listen()
+	go network.Listen()
+	for {
+		time.Sleep(20 * time.Second)
+		fmt.Println("supernode")
+	}
 }
 
 
