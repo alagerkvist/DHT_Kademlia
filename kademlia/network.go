@@ -310,25 +310,23 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 
 
 
-func (network *Network) SendFindContactMessage(contact *Contact, findThisID *KademliaID) *ContactCandidates{
+func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *Contact) Response{
 	result := network.marshalFindContact(findThisID, contact)
 	//fmt.Println(len(result.ContactsKNearest))
 
 	newCandidates := &ContactCandidates{}
 	newContacts := make([]Contact, len(result.ContactsKNearest))
 
-	//fmt.Println("\n--- Contacts recus: ")
 	for i := 0 ; i < len(result.ContactsKNearest) ; i++{
 		//Create the new contact
 		newContacts[i] = NewContact(NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), *result.ContactsKNearest[i].Address)
 		newContacts[i].distance = NewKademliaIDFromBytes(result.ContactsKNearest[i].Distance)
-		//fmt.Println(newContacts[i].String())
 	}
 	//fmt.Println("---\n")
 
 	newCandidates.Append(newContacts)
 
-	return newCandidates
+	return Response{newCandidates, nil, nil}
 }
 
 func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Contact) (*ProtocolPackage){

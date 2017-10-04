@@ -1,7 +1,6 @@
 package kademlia
 
 import (
-	"sync"
 	"fmt"
 	"strconv"
 	"crypto/sha256"
@@ -19,10 +18,6 @@ type NodeToCheck struct{
 	alreadyChecked	bool 	//usefull if network < k
 }
 
-type SafeNodesCheck struct {
-	nodesToCheck []NodeToCheck
-	mux sync.Mutex
-}
 
 type Request struct{
 	contact *Contact
@@ -38,115 +33,19 @@ type Response struct{
 //LookupContact is a method of Kademlia to locate some Node
 //Params target: it is the finded contact
 func (kademlia *Kademlia) LookupContact(targetId *KademliaID) []NodeToCheck{
-	//Creation of the shared array
-	var safeNodesToCheck = SafeNodesCheck{nodesToCheck: make([]NodeToCheck, 0, bucketSize)}
-	var noMoreToCheck bool
-	nbRunningThreads := 0
-	var wg sync.WaitGroup
-	var counterThreadsDone = 0
-
-	//Fulfill this array with at most the k nodes from buckets
-	responseChannel := make(chan []Contact)
-	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{targetId, "", nil})
-	firstContacts := <- responseChannel
-
-	//fmt.Println("\n--- Contacts to join: ")
-	for i:=0 ; i<len(firstContacts) ; i++ {
-		//fmt.Println(firstContacts[i].String())
-		safeNodesToCheck.nodesToCheck = append(safeNodesToCheck.nodesToCheck, NodeToCheck{&firstContacts[i], false})
-	}
-	//fmt.Println("---")
-
-	//Start sending rpc nodes -> wait method
-	for {
-		if nbRunningThreads < alpha {
-			wg.Add(1)
-			counterThreadsDone++
-			nbRunningThreads++
-			go safeNodesToCheck.sendFindNode(&nbRunningThreads, kademlia.network, &noMoreToCheck, &wg, targetId)
-		}
-
-		//Stop the infinite loop when get all the information needed
-		if(noMoreToCheck){
-			wg.Wait() //Wait for all threads to finish
-			if(noMoreToCheck){
-				break
-			}
-		}
-	}
-
-	return safeNodesToCheck.nodesToCheck
-}
-
-/*
-*	Send RPC_NODE RPC and add new contacts to the array, check if need to end the loop.
- */
-func(safeNodesCheck *SafeNodesCheck) sendFindNode(nbRunningThreads *int, network *Network, noMoreToCheck *bool, wg *sync.WaitGroup, targetID *KademliaID){
-	defer wg.Done()
-	safeNodesCheck.mux.Lock()
-	//find the next one to check
-	for i:=0 ; i < len(safeNodesCheck.nodesToCheck) ; i++{
-		if !safeNodesCheck.nodesToCheck[i].alreadyChecked && !safeNodesCheck.nodesToCheck[i].contact.ID.Equals(network.myRoutingTable.me.ID){
-			//The node will not be taken into account by the other threads.
-			safeNodesCheck.nodesToCheck[i].alreadyChecked = true
-			safeNodesCheck.mux.Unlock()
-
-			//fmt.Println("\n*** Ask to: " + safeNodesCheck.nodesToCheck[i].contact.String())
-			//fmt.Println("Target: "+ targetID.String() +"\n***\n")
-
-			newContacts := network.SendFindContactMessage(safeNodesCheck.nodesToCheck[i].contact, targetID)
-
-			//insertion of the new one
-			safeNodesCheck.mux.Lock()
-			for i:=0 ; i<newContacts.Len() ; i++{
-				//fmt.Println("Contact to add: " + newContacts.contacts[i].String())
-
-				for j:=0 ; j<bucketSize ; j++{
-					if !newContacts.contacts[i].ID.Equals(network.myRoutingTable.me.ID){
-						//case of less than k values
-						if j >= len(safeNodesCheck.nodesToCheck) {
-							safeNodesCheck.nodesToCheck = append(safeNodesCheck.nodesToCheck, NodeToCheck{&newContacts.contacts[i], false})
-							break;
-						} else if newContacts.contacts[i].ID.Equals(safeNodesCheck.nodesToCheck[j].contact.ID){
-							break;
-						} else if  newContacts.contacts[i].Less(safeNodesCheck.nodesToCheck[j].contact){
-							//Shift value of the array and insert the new one
-							copy(safeNodesCheck.nodesToCheck[j+1:], safeNodesCheck.nodesToCheck[j: len(safeNodesCheck.nodesToCheck) - 1])
-							safeNodesCheck.nodesToCheck[j].contact = &(newContacts.contacts[i])
-							safeNodesCheck.nodesToCheck[j].alreadyChecked = false
-							break;
-						}
-					}
-				}
-			}
-			safeNodesCheck.mux.Unlock()
-			*nbRunningThreads--
-			*noMoreToCheck = false
-
-
-			/*fmt.Println("\n%%%% After adding: ")
-			safeNodesCheck.Print()
-			fmt.Println("\n%%%")
-			*/
-			return
-		}
-	}
-
-	safeNodesCheck.mux.Unlock()
-	*nbRunningThreads--
-	*noMoreToCheck = true
-
-	fmt.Println("\n%%%% Nothing to add \n%%%")
-
-	return
+	return kademlia.Lookup(targetId, true)
 }
 
 
 
-//LookupContact is a method of KAdemlia to locate some Data
-//PArams hash: it is the finded data with the 160 bits hash
 func (kademlia *Kademlia) LookupData(fileName string) {
 	targetID := NewKademliaID(fileName)
+	kademlia.Lookup(targetID, false)
+
+}
+//LookupContact is a method of KAdemlia to locate some Data
+//PArams hash: it is the finded data with the 160 bits hash
+func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToCheck{
 	channelToSendRequest := make(chan Request, alpha)
 	channelToReceive := make(chan Response)
 	nodesToCheck := make([]NodeToCheck, 0, bucketSize)
@@ -163,7 +62,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 	}
 
 	for i := 0 ; i < alpha ; i++ {
-		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive)
+		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive, isForNode)
 		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
 		nodesToCheck[i].alreadyChecked = true
 	}
@@ -172,12 +71,12 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 		newResponse := <- channelToReceive
 
 		//Receive data
-		if newResponse.newContacts == nil{
+		if !isForNode && newResponse.newContacts == nil{
 			fmt.Println("response: " + *newResponse.data)
 			contactWithFiles = append(contactWithFiles, *newResponse.hasData)
-			kademlia.network.fileManager.checkAndStore(fileName, *newResponse.data)
+			kademlia.network.fileManager.checkAndStore(targetID.String(), *newResponse.data)
 
-			for i := 1 ; i < alpha ; i++{
+			for ; countEndThread + 1 < alpha; countEndThread++{
 				//Get the last responses and check if they have the file
 				newResponse := <- channelToReceive
 				fmt.Println(newResponse)
@@ -186,7 +85,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 				}
 			}
 			sendEndWork(channelToSendRequest, alpha)
-
+			//Find the node to send store message
 			for i:=0 ; i < len(nodesToCheck) ; i++{
 				canSend := false
 				for j:= 0 ; j < len(contactWithFiles) ; j++ {
@@ -195,7 +94,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 					}
 				}
 				if(canSend){
-					kademlia.network.marshalStore(fileName, *newResponse.data, nodesToCheck[i].contact)
+					kademlia.network.marshalStore(targetID.String(), *newResponse.data, nodesToCheck[i].contact)
 					break
 				}
 			}
@@ -232,7 +131,11 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 		if nextContactToCheck == nil{
 			countEndThread++
 			if countEndThread == alpha {
-				fmt.Println("Impossible to find the file in the network")
+				if(!isForNode) {
+					fmt.Println("Impossible to find the file in the network")
+				}
+				Print(nodesToCheck)
+
 				//Print(nodesToCheck)
 				sendEndWork(channelToSendRequest, alpha)
 				break
@@ -243,7 +146,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 		}
 	}
 
-
+	return nodesToCheck
 }
 
 
@@ -254,7 +157,7 @@ func sendEndWork(channelToSendRequest chan Request, nb int){
 }
 
 
-func(network *Network) workerFindData(requestsChannel chan Request, targetId KademliaID, responseChannel chan Response) {
+func(network *Network) workerFindData(requestsChannel chan Request, targetId KademliaID, responseChannel chan Response, isForNode bool) {
 
 	for {
 		request := <- requestsChannel
@@ -263,7 +166,11 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 		}
 		fmt.Print("request: ")
 		fmt.Println(request.contact)
-		responseChannel <- network.SendFindDataValue(targetId, request.contact)
+		if !isForNode {
+			responseChannel <- network.SendFindDataValue(targetId, request.contact)
+		} else {
+			responseChannel <- network.SendFindContactMessage(&targetId, request.contact)
+		}
 	}
 }
 
