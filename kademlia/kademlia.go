@@ -1,7 +1,6 @@
 package kademlia
 
 import (
-	"sync"
 	"fmt"
 	"strconv"
 	"crypto/sha256"
@@ -19,10 +18,6 @@ type NodeToCheck struct{
 	alreadyChecked	bool 	//usefull if network < k
 }
 
-type SafeNodesCheck struct {
-	nodesToCheck []NodeToCheck
-	mux sync.Mutex
-}
 
 type Request struct{
 	contact *Contact
