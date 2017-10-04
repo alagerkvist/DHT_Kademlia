@@ -21,6 +21,7 @@ func main() {
 	var network *kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
 	kademlia.AddSourceNodes(network, numberSrcNodes, ip, port)
 	fmt.Println(network.GetMyRoutingTable().GetMyContact())
+	fmt.Println(network.GetMyRoutingTable())
 	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
 	kademlia.AssingNetworkKademlia(network, kadem)
 
@@ -61,13 +62,16 @@ func processText(text string, kadem *kademlia.Kademlia){
 	var command = words[0]
 	switch command {
 	case "ping":
-		processCommandPing(words, kadem)
+		go processCommandPing(words, kadem)
 		break
 	case "info":
-		processCommandInfo(words)
+		go processCommandInfo(words)
 		break
 	case "routingTable":
-		processCommandRoutingTable(words)
+		go processCommandRoutingTable(words)
+		break
+	case "lookup":
+		go processCommandLookup(words, kadem)
 		break
 	case "help":
 		break
@@ -77,6 +81,12 @@ func processText(text string, kadem *kademlia.Kademlia){
 	printHelp()
 }
 
+func processCommandLookup (words []string, kadem *kademlia.Kademlia){
+	fmt.Println("processCommandLookup", kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+	kadem.LookupContact(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+}
+
+
 func processCommandPing(words []string, kadem *kademlia.Kademlia){
 	if  len(words) != 3 ||
 		(words[1] != "--nodeID" && words[1] != "--nodeIP") {
@@ -84,12 +94,10 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 		return
 	}
 
+
 	newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
-	kamId := kademlia.NewKademliaID(newKademliaID)
-	fmt.Println(kamId)
-	var newContactbis kademlia.Contact = kademlia.NewContact(kamId, "10.5.0.21:8080")
-	newContact := &newContactbis
-	kadem.GetNetwork().SendPingMessage(newContact)
+	newContact := kademlia.NewContact(kademlia.NewKademliaID(newKademliaID), "10.5.0." + strconv.Itoa(21) + ":" + strconv.Itoa(8080))
+	kadem.GetNetwork().SendPingMessage(&newContact)
 
 	fmt.Println("sending ping to ", words[2])
 	fmt.Println("***********")

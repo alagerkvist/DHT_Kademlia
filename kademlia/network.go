@@ -41,26 +41,27 @@ func (network *Network) Listen() {
 	for {
 
 		n,remoteaddr,err := ser.ReadFromUDP(p)
-
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
+		fmt.Println(unMarshalMessage)
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
 
 		//new contact and add it to bucket
-		newContact := &Contact{
+/*		newContact := &Contact{
 			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
 			Address: *unMarshalMessage.Address,
 		}
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
 		network.myRoutingTable.createTask(addContact, nil, newContact)
-
-		//fmt.Println(unMarshalMessage.GetMessageSent())
+*/
+		fmt.Println("******************")
+		fmt.Println(unMarshalMessage.GetMessageSent())
 
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
-			//fmt.Printf("Ping")
+			fmt.Printf("Ping")
 			network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_STORE:
@@ -68,7 +69,7 @@ func (network *Network) Listen() {
 			network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_FINDNODE:
-			//fmt.Println("\n\n --- find node --- \n")
+			fmt.Println("\n\n --- find node --- \n")
 			network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
 
 			break;
@@ -186,13 +187,16 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 
 	fmt.Println("sender", address)
 	p :=  make([]byte, packetSize)
+	fmt.Println(marshaledObject)
+	fmt.Println(string(marshaledObject))
 	conn, err := net.Dial("udp", address)
 
 	if err != nil {
 		fmt.Printf("126 Some error %v", err)
 		return nil
 	}
-	fmt.Fprintf(conn, string(marshaledObject))
+	//fmt.Fprintf(conn, string(marshaledObject))
+	conn.Write(marshaledObject)
 	if answerWanted {
 		n, err := conn.Read(p)
 
@@ -299,6 +303,7 @@ func (network *Network) SendPingMessage(contact *Contact) {
 func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	fmt.Println("marshallping")
 	typeOfMessage := ProtocolPackage_PING
+
 	marshalPackage := &ProtocolPackage{
 		ClientID: network.myRoutingTable.me.ID.getBytes(),
 		Address: proto.String(network.myRoutingTable.me.Address),
@@ -306,6 +311,8 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	}
 
 	data, err := proto.Marshal(marshalPackage)
+	fmt.Println(marshalPackage)
+	fmt.Println(data)
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
