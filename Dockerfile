@@ -1,14 +1,25 @@
-FROM golang:1.7-alpine
 
-ADD . /home
-        
-WORKDIR /home
+FROM ubuntu:14.04
+RUN apt-get update
+RUN apt-get -y upgrade
+RUN apt-get -y install curl
+RUN apt-get -y install git
 
-RUN apk update
-RUN apk add screen
+RUN curl -O https://storage.googleapis.com/golang/go1.9.linux-amd64.tar.gz
+RUN mv go1.9.linux-amd64.tar.gz /usr/local/
+RUN tar -xf /usr/local/go1.9.linux-amd64.tar.gz -C /usr/local/
 
-RUN \
-       apk add --no-cache bash git openssh && \
-       go get -u github.com/minio/minio-go 
-       
+ENV PATH $PATH:/usr/local/go/bin
+ENV SRC_DIR=/go/local/github.com/ramirobg94/DHT_Kademlia        
+ADD . $SRC_DIR    
+
+RUN mv /go/local/github.com/ramirobg94/DHT_Kademlia/* .
+
+RUN cd $SRC_DIR;
+
+RUN go env
+
+RUN go get -u -v github.com/golang/protobuf/proto
+# RUN go get -u -v github.com/golang/protobuf/protoc-gen-go	
+
 RUN ls
