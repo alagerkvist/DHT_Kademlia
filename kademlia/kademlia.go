@@ -27,7 +27,8 @@ type Request struct{
 type Response struct{
 	newContacts *ContactCandidates
 	data *string
-	hasData *Contact
+	contactedContact *Contact
+	error bool
 }
 
 //LookupContact is a method of Kademlia to locate some Node
@@ -69,11 +70,13 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 	for {
 		newResponse := <- channelToReceive
+		if newResponse.error{
+			fmt.Println("Unreachable node")
+			kademlia.network.myRoutingTable.createTask(removeContact, nil, newResponse.contactedContact)
 
-		//Receive data
-		if !isForNode && newResponse.newContacts == nil{
+		} else if !isForNode && newResponse.newContacts == nil{
 			fmt.Println("response: " + *newResponse.data)
-			contactWithFiles = append(contactWithFiles, *newResponse.hasData)
+			contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
 			kademlia.network.fileManager.checkAndStore(targetID.String(), *newResponse.data)
 
 			for ; countEndThread + 1 < alpha; countEndThread++{
@@ -81,7 +84,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 				newResponse := <- channelToReceive
 				fmt.Println(newResponse)
 				if newResponse.newContacts == nil{
-					contactWithFiles = append(contactWithFiles, *newResponse.hasData)
+					contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
 				}
 			}
 			sendEndWork(channelToSendRequest, alpha)

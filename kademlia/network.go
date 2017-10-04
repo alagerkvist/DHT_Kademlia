@@ -3,9 +3,6 @@ package kademlia
 import (
 	"net"
 	"fmt"
-	//"bufio"
-	//"log"
-	//"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"log"
 	"strings"
@@ -245,10 +242,13 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 
 
 
-
 func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Response{
 
 	result := network.marshalFindValue(id, contact)
+
+	if result == nil{
+		return Response{nil, nil, contact, true}
+	}
 
 
 	if result.ContactsKNearest != nil{
@@ -263,10 +263,10 @@ func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Respo
 		}
 
 		newCandidates.Append(newContacts)
-		return Response{newCandidates, nil, nil}
+		return Response{newCandidates, nil, nil, false}
 	}
 
-	return Response{nil, result.File, contact}
+	return Response{nil, result.File, contact, false}
 }
 
 func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*ProtocolPackage) {
@@ -312,7 +312,10 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 
 func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *Contact) Response{
 	result := network.marshalFindContact(findThisID, contact)
-	//fmt.Println(len(result.ContactsKNearest))
+
+	if result == nil{
+		return Response{nil, nil, contact, true}
+	}
 
 	newCandidates := &ContactCandidates{}
 	newContacts := make([]Contact, len(result.ContactsKNearest))
@@ -326,7 +329,7 @@ func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *
 
 	newCandidates.Append(newContacts)
 
-	return Response{newCandidates, nil, nil}
+	return Response{newCandidates, nil, nil, false}
 }
 
 func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Contact) (*ProtocolPackage){
@@ -379,8 +382,6 @@ func (network *Network) marshalStore(fileName string, data string, contact *Cont
 	}
 	return network.Sender(marshalData, contact.Address, false)
 }
-
-
 
 
 
