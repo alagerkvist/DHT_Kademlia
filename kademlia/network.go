@@ -47,7 +47,7 @@ func (network *Network) Listen() {
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
-
+		fmt.Println(unMarshalMessage)
 		//new contact and add it to bucket
 		newContact := &Contact{
 			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
