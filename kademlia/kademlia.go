@@ -177,7 +177,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 			contactWithFiles = append(contactWithFiles, *newResponse.hasData)
 			kademlia.network.fileManager.checkAndStore(fileName, *newResponse.data)
 
-			for i := 1 ; i < alpha ; i++{
+			for ; countEndThread + 1 < alpha; countEndThread++{
 				//Get the last responses and check if they have the file
 				newResponse := <- channelToReceive
 				fmt.Println(newResponse)
@@ -186,7 +186,7 @@ func (kademlia *Kademlia) LookupData(fileName string) {
 				}
 			}
 			sendEndWork(channelToSendRequest, alpha)
-
+			//Find the node to send store message
 			for i:=0 ; i < len(nodesToCheck) ; i++{
 				canSend := false
 				for j:= 0 ; j < len(contactWithFiles) ; j++ {
