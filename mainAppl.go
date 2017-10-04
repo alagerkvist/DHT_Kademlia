@@ -80,13 +80,17 @@ func processText(text string, kadem *kademlia.Kademlia){
 func processCommandPing(words []string, kadem *kademlia.Kademlia){
 	if  len(words) != 3 ||
 		(words[1] != "--nodeID" && words[1] != "--nodeIP") {
-		newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
-		kamId := kademlia.NewKademliaID(newKademliaID)
-		var newContact *kademlia.Contact = &kademlia.NewContact(kamId, "10.5.0.21:8080")
-		kadem.GetNetwork().SendPingMessage(newContact)
 		fmt.Println("error PING")
 		return
 	}
+
+	newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
+	kamId := kademlia.NewKademliaID(newKademliaID)
+	fmt.Println(kamId)
+	var newContactbis kademlia.Contact = kademlia.NewContact(kamId, "10.5.0.21:8080")
+	newContact := &newContactbis
+	kadem.GetNetwork().SendPingMessage(newContact)
+
 	fmt.Println("sending ping to ", words[2])
 	fmt.Println("***********")
 }

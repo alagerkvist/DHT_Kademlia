@@ -17,7 +17,7 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.22
-    command: "go run mainSourceNodes.go 1 2 10.5.0. 8080 > output.txt 2>&1 &"
+    command: "go run mainAppl.go 1 &"
 
 networks:
   vpcbr:
