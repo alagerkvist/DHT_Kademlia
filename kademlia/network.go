@@ -49,13 +49,15 @@ func (network *Network) Listen() {
 		}
 
 		//new contact and add it to bucket
-/*		newContact := &Contact{
+
+		/*newContact := &Contact{
 			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
 			Address: *unMarshalMessage.Address,
 		}
+		fmt.Println(newContact)
+
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
-		network.myRoutingTable.createTask(addContact, nil, newContact)
-*/
+		network.myRoutingTable.createTask(addContact, nil, newContact)*/
 		fmt.Println("******************")
 		fmt.Println(unMarshalMessage.GetMessageSent())
 
@@ -98,6 +100,7 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
 	if err == nil {
+		fmt.Println("pong")
 		_,err := ser.WriteToUDP(marshalledpongPacket, remoteaddr)
 		if err != nil {
 			fmt.Printf("Couldn’t send response %v", err)}
@@ -197,23 +200,26 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 	}
 	//fmt.Fprintf(conn, string(marshaledObject))
 	conn.Write(marshaledObject)
+	fmt.Println("watting answer")
 	if answerWanted {
 		n, err := conn.Read(p)
-
+		fmt.Println("answer")
+		fmt.Println(p)
 		if err == nil {
 
 			unMarshalledResponse := &ProtocolPackage{}
 			err = proto.Unmarshal(p[:n], unMarshalledResponse)
 
+
 			//new contact and add it to bucket
-			//fmt.Println(unMarshalledResponse)
-			newContact := &Contact{
+			fmt.Println(unMarshalledResponse)
+			/*newContact := &Contact{
 				ID:      NewKademliaIDFromBytes(unMarshalledResponse.ClientID),
 				Address: address,
 			}
 
 			newContact.CalcDistance(network.myRoutingTable.me.ID)
-			network.myRoutingTable.createTask(addContact, nil, newContact)
+			network.myRoutingTable.createTask(addContact, nil, newContact)*/
 
 			switch unMarshalledResponse.GetMessageSent() {
 			case ProtocolPackage_PING:
