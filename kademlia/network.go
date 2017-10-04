@@ -184,6 +184,7 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 
 func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
+	fmt.Println("sender", address)
 	p :=  make([]byte, packetSize)
 	conn, err := net.Dial("udp", address)
 
@@ -231,6 +232,8 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			}
 
 			conn.Close()
+			fmt.Println("unMarshalledResponse")
+			fmt.Println(unMarshalledResponse)
 			return unMarshalledResponse
 		} else {
 			fmt.Printf("175 Some error %v\n", err)
@@ -294,6 +297,7 @@ func (network *Network) SendPingMessage(contact *Contact) {
 }
 
 func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
+	fmt.Println("marshallping")
 	typeOfMessage := ProtocolPackage_PING
 	marshalPackage := &ProtocolPackage{
 		ClientID: network.myRoutingTable.me.ID.getBytes(),

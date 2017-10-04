@@ -18,8 +18,9 @@ RUN mv /go/local/github.com/ramirobg94/DHT_Kademlia/* .
 RUN cd $SRC_DIR;
 
 RUN go env
-
+RUN apt-get install -y protobuf-compiler
+RUN apt-get install -y golang-goprotobuf-dev
 RUN go get -u -v github.com/golang/protobuf/proto
-# RUN go get -u -v github.com/golang/protobuf/protoc-gen-go	
+RUN go get -u -v github.com/golang/protobuf/protoc-gen-go
 
 RUN ls
