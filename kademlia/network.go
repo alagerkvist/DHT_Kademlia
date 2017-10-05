@@ -41,6 +41,7 @@ func (network *Network) Listen() {
 	for {
 
 		n,remoteaddr,err := ser.ReadFromUDP(p)
+
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		fmt.Println(unMarshalMessage)
@@ -65,18 +66,22 @@ func (network *Network) Listen() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
 			network.processPing(unMarshalMessage, remoteaddr, ser)
+			//fmt.Printf("Ping")
+			go network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_STORE:
 			//fmt.Printf("store")
-			network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
+			go network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_FINDNODE:
 			fmt.Println("\n\n --- find node --- \n")
 			network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
+			//fmt.Println("\n\n --- find node --- \n")
+			go network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
 
 			break;
 		case ProtocolPackage_FINDVALUE:
-			network.processFindValue(unMarshalMessage, remoteaddr, ser)
+			go network.processFindValue(unMarshalMessage, remoteaddr, ser)
 
 			break;
 
@@ -103,7 +108,10 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 		fmt.Println("pong")
 		_,err := ser.WriteToUDP(marshalledpongPacket, remoteaddr)
 		if err != nil {
-			fmt.Printf("Couldn’t send response %v", err)}
+			fmt.Printf("Couldn’t send response %v", err)
+			network.myRoutingTable.RemoveContact(NewContact(NewKademliaIDFromBytes(protocolPackage.ClientID), *protocolPackage.Address))
+		}
+
 	}else {
 		log.Fatal("marshaling pong error: ", err)
 	}
@@ -113,7 +121,7 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
 
-	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize)
+	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize, false)
 	//fmt.Println(kclosetContacts)
 
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
@@ -138,6 +146,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 		_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
 		if err != nil {
 			fmt.Printf("Couldn't send response %v", err)
+			network.myRoutingTable.RemoveContact(NewContact(NewKademliaIDFromBytes(protocolPackage.ClientID), *protocolPackage.Address))
 		}
 
 	}else {
@@ -175,6 +184,7 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 			_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
 			if err != nil {
 				fmt.Printf("Couldn't send response %v", err)
+				network.myRoutingTable.RemoveContact(NewContact(NewKademliaIDFromBytes(protocolPackage.ClientID), *protocolPackage.Address))
 			}
 
 		}else {

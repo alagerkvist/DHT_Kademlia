@@ -25,7 +25,7 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 
 		switch task.idType {
 		case lookUpContact:
-			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize)
+			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, true)
 		case addContact:
 			routingTable.AddContact(*task.contactRequested)
 		case removeContact:

@@ -3,11 +3,13 @@ package kademlia
 import (
 	"container/list"
 	"fmt"
+	"time"
 )
 
 type bucket struct {
 	list *list.List
 	cacheList *list.List
+	lastTimeVisited time.Time
 }
 
 func newBucket() *bucket {

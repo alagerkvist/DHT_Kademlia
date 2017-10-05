@@ -1,7 +1,7 @@
 package kademlia
 
 import (
-
+	"time"
 )
 
 const bucketSize = 10
@@ -28,20 +28,30 @@ func (routingTable *RoutingTable) AddContact(contact Contact) {
 	bucket.AddContact(contact)
 }
 
-func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count int) []Contact {
+func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count int, isForLookup bool) []Contact {
 	var candidates ContactCandidates
 	bucketIndex := routingTable.getBucketIndex(target)
 
 	bucket := routingTable.buckets[bucketIndex]
+	if isForLookup{
+		bucket.lastTimeVisited = time.Now().Local()
+	}
+
 	candidates.Append(bucket.GetContactAndCalcDistance(target))
 
 	for i := 1; (bucketIndex-i >= 0 || bucketIndex+i < IDLength*8) && candidates.Len() < count; i++ {
 		if bucketIndex-i >= 0 {
 			bucket = routingTable.buckets[bucketIndex-i]
+			if isForLookup{
+				bucket.lastTimeVisited = time.Now().Local()
+			}
 			candidates.Append(bucket.GetContactAndCalcDistance(target))
 		}
 		if bucketIndex+i < IDLength*8 {
 			bucket = routingTable.buckets[bucketIndex+i]
+			if isForLookup{
+				bucket.lastTimeVisited = time.Now().Local()
+			}
 			candidates.Append(bucket.GetContactAndCalcDistance(target))
 		}
 	}
