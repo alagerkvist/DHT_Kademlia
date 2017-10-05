@@ -1,7 +1,7 @@
 package kademlia
 
 import (
-	"fmt"
+"fmt"
 )
 
 type Task struct {

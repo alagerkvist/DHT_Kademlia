@@ -66,9 +66,9 @@ func CreateWantedNetworkPrev(numberNodes int) []Network{
 		number := 1234 + i
 		var newContact = NewContact(NewKademliaID(ids[i]), "127.0.0.1:" + strconv.Itoa(number))
 		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
-		newNetworks[i].fileManager = &FileManager{&base64.Encoding{}}
+		newNetworks[i].fileManager = &FileManager{&base64.Encoding{}, make(map[string]FileInfo)}
 
-	}
+}
 
 	return newNetworks
 

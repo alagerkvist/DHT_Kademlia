@@ -2,7 +2,6 @@ version: "2"
 services:
   supernode1:
     build: .
-    tty: true
     expose:
       - "8080/udp"
     networks:
@@ -11,7 +10,6 @@ services:
     command: "go run mainSourceNodes.go 0 1 10.5.0. 8080 > output.txt 2>&1 &"
   supernode2:
     build: .
-    tty: true
     expose:
       - "8080/udp"
     networks:
@@ -20,7 +18,6 @@ services:
     command: "go run mainSourceNodes.go 1 5 10.5.0. 8080 > output.txt 2>&1 &"
   supernode3:
     build: .
-    tty: true
     expose:
       - "8080/udp"
     networks:
@@ -29,7 +26,6 @@ services:
     command: "go run mainSourceNodes.go 2 5 10.5.0. 8080 > output.txt 2>&1 &"
   supernode4:
     build: .
-    tty: true
     expose:
       - "8080/udp"
     networks:
@@ -44,7 +40,6 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.25
-    command: "go run mainSourceNodes.go 4 5 10.5.0. 8080 > output.txt 2>&1 &"
   web:
     build: .
     tty: true

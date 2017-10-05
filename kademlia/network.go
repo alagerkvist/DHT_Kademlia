@@ -214,7 +214,6 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 	if answerWanted {
 		n, err := conn.Read(p)
 		fmt.Println("answer")
-		fmt.Println(p)
 		if err == nil {
 
 			unMarshalledResponse := &ProtocolPackage{}
