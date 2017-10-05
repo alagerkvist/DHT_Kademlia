@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 )
 
-const alpha = 3
+const alpha = 1
 
 type Kademlia struct {
 	network *Network
@@ -64,6 +64,9 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 	for i := 0 ; i < alpha ; i++ {
 		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive, isForNode)
+
+		fmt.Println("sender")
+		Print(nodesToCheck)
 		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
 		nodesToCheck[i].alreadyChecked = true
 	}
