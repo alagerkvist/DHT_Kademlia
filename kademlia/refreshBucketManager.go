@@ -11,6 +11,13 @@ import (
 
 func (kademlia *Kademlia) StartRefreshManaging(){
 	var buck bucket
+
+	//Init date for all buckets
+	for i:=0 ; i < IDLength * 8 ; i++ {
+		buck = *kademlia.network.myRoutingTable.buckets[i]
+		buck.lastTimeVisited = time.Now().Local()
+	}
+
 	for{
 		time.Sleep(1 * time.Minute)
 		for i:=0 ; i < IDLength * 8 ; i++{

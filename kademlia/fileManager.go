@@ -5,13 +5,26 @@ import (
 	"os"
 	"fmt"
 	"encoding/base64"
+	"time"
 )
 
 type FileManager struct{
 	encoder *base64.Encoding
+	filesStored map[string]FileInfo
+}
+
+type FileInfo struct {
+	fileName string
+	lastOriginalStored time.Time
+	lastTimeRefreshed time.Time
+	initialStore time.Time
+	expirationTime float64
+	originalStore bool
+	immutable bool
 }
 
 const filesDirectory = "kademlia/Files/"
+
 
 func (f *FileManager) checkAndStore(fileName string, data string) {
 	_, err := ioutil.ReadFile(filesDirectory + fileName)
@@ -49,3 +62,35 @@ func (f *FileManager) readData(fileName string) []byte{
 	data, _ := ioutil.ReadFile(fileName)
 	return data
 }
+
+
+func (fileManager *FileManager) RemoveFile(filename string){
+	delete(fileManager.filesStored, filename)
+	os.Remove(filesDirectory + filename)
+}
+
+
+func (kademlia *Kademlia) checkFiles(){
+
+	for{
+		time.Sleep(1 * time.Minute)
+		for k, file := range kademlia.network.fileManager.filesStored {
+
+				//Refreshing each file that has not been refresh from one hour
+			if time.Since(file.lastTimeRefreshed).Hours() >= 1 {
+				kademlia.Store(k)
+
+				//Refreshing files owned, each 24h
+			} else if file.originalStore && time.Since(file.lastOriginalStored).Hours() >= 24{
+				file.lastOriginalStored = time.Now().Local()
+				kademlia.Store(k)
+
+				//Delete expirated files
+			} else if !file.immutable && time.Since(file.initialStore).Hours() >= file.expirationTime{
+				kademlia.network.fileManager.RemoveFile(k)
+			}
+		}
+	}
+}
+
+

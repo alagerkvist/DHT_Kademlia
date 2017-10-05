@@ -29,8 +29,7 @@ func main() {
 	}
 
 	time.Sleep(2 * time.Second)
-
-	kademliaNodes[0].GetNetwork().SendPingMessage(networks[1].GetMyRoutingTable().GetMyContact())
+	
 	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
 	kademliaNodes[0].LookupData("98c52cbb1057afa0af21d602a0c5ccde4a762d0a")
 	//time.Sleep(2 * time.Second)

@@ -95,3 +95,9 @@ func(bucket *bucket) findElementInList(contact Contact, ls *list.List) *list.Ele
 func (bucket *bucket) Len() int {
 	return bucket.list.Len()
 }
+
+func (bucket *bucket) Print() {
+	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
+		fmt.Println(elt.Value.(Contact))
+	}
+}

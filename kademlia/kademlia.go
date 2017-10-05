@@ -110,7 +110,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 		newContacts := newResponse.newContacts
 
-		for i:=0 ; i<newContacts.Len() ; i++{
+		for i:=0 ; newContacts != nil && i<newContacts.Len() ; i++{
 			//fmt.Println("Contact to add: " + newContacts.contacts[i].String())
 
 			for j:=0 ; j<bucketSize ; j++{
