@@ -9,15 +9,50 @@ services:
       vpcbr:
         ipv4_address: 10.5.0.21
     command: "go run mainSourceNodes.go 0 1 10.5.0. 8080 > output.txt 2>&1 &"
+  supernode2:
+    build: .
+    tty: true
+    expose:
+      - "8080/udp"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.22
+    command: "go run mainSourceNodes.go 1 5 10.5.0. 8080 > output.txt 2>&1 &"
+  supernode3:
+    build: .
+    tty: true
+    expose:
+      - "8080/udp"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.23
+    command: "go run mainSourceNodes.go 2 5 10.5.0. 8080 > output.txt 2>&1 &"
+  supernode4:
+    build: .
+    tty: true
+    expose:
+      - "8080/udp"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.24
+    command: "go run mainSourceNodes.go 3 5 10.5.0. 8080 > output.txt 2>&1 &"
+  supernode5:
+    build: .
+    tty: true
+    expose:
+      - "8080/udp"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.25
+    command: "go run mainSourceNodes.go 4 5 10.5.0. 8080 > output.txt 2>&1 &"
   web:
     build: .
     tty: true
     expose:
       - "8080/upd"
     networks:
-      vpcbr:
-        ipv4_address: 10.5.0.22
-    command: "go run mainAppl.go 1 &"
+      - vpcbr
+    command: "go run mainAppl.go 5 &"
 
 networks:
   vpcbr:

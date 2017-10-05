@@ -51,14 +51,14 @@ func (network *Network) Listen() {
 		fmt.Println(unMarshalMessage)
 		//new contact and add it to bucket
 
-		/*newContact := &Contact{
+		newContact := &Contact{
 			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
 			Address: *unMarshalMessage.Address,
 		}
 		fmt.Println(newContact)
 
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
-		network.myRoutingTable.createTask(addContact, nil, newContact)*/
+		network.myRoutingTable.createTask(addContact, nil, newContact)
 		fmt.Println("******************")
 		fmt.Println(unMarshalMessage.GetMessageSent())
 
@@ -120,9 +120,9 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
-
-	kclosetContacts := network.myRoutingTable.FindClosestContacts(NewKademliaIDFromBytes(protocolPackage.FindID), bucketSize, false)
-	//fmt.Println(kclosetContacts)
+	respChan := make(chan []Contact)
+	network.myRoutingTable.createTask(getClosest, respChan, &Contact{NewKademliaIDFromBytes(protocolPackage.FindID), "", nil})
+	kclosetContacts := <- respChan
 
 	sendContacts := make([]*ProtocolPackage_ContactInfo, 0)
 
@@ -222,14 +222,14 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 
 
 			//new contact and add it to bucket
-			fmt.Println(unMarshalledResponse)
-			/*newContact := &Contact{
+			//fmt.Println(unMarshalledResponse)
+			newContact := &Contact{
 				ID:      NewKademliaIDFromBytes(unMarshalledResponse.ClientID),
 				Address: address,
 			}
 
 			newContact.CalcDistance(network.myRoutingTable.me.ID)
-			network.myRoutingTable.createTask(addContact, nil, newContact)*/
+			network.myRoutingTable.createTask(addContact, nil, newContact)
 
 			switch unMarshalledResponse.GetMessageSent() {
 			case ProtocolPackage_PING:

@@ -13,6 +13,7 @@ type Task struct {
 const lookUpContact = 0
 const addContact = 1
 const removeContact = 2
+const getClosest = 3
 
 
 
@@ -26,6 +27,8 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 		switch task.idType {
 		case lookUpContact:
 			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, true)
+		case getClosest:
+			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, false)
 		case addContact:
 			routingTable.AddContact(*task.contactRequested)
 		case removeContact:

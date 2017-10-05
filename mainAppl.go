@@ -26,6 +26,8 @@ func main() {
 	kademlia.AssingNetworkKademlia(network, kadem)
 
 	go network.Listen()
+	go network.GetMyRoutingTable().StartRoutingTableListener()
+	//go kadem.StartRefreshManaging()
 
 	printHelp()
 
