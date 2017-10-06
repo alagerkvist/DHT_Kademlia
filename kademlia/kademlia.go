@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"crypto/sha256"
 	"encoding/base64"
+	"math/rand"
 )
 
 const alpha = 3
+
 
 type Kademlia struct {
 	network *Network
@@ -212,7 +214,7 @@ func (kademlia *Kademlia) Store(fileName string) {
 		fileManager.CheckAndStore(idFile.String(), base64Data)
 
 		contactToSend := kademlia.LookupContact(idFile)
-		fmt.Println(contactToSend)
+		//fmt.Println(contactToSend)
 		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
 	}
 }
@@ -252,4 +254,24 @@ func (kademlia *Kademlia) GetNetwork() *Network{
 	return kademlia.network
 }
 
+func (kademlia *Kademlia) GenerateNewFile() string{
+	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	newData := RandStringRunes(200, letterRunes)
+	data := []byte(newData)
+	base64Data := base64.StdEncoding.EncodeToString(data[:])
 
+	//Generate a hash for the name of the file
+	hash := sha256.Sum256(data)
+	idFile := NewKademliaIDFromBytes(hash[:IDLength])
+	kademlia.network.FileManager.CheckAndStore(idFile.String(), base64Data)
+	return idFile.String()
+}
+
+//From internet
+func RandStringRunes(n int, letterRunes []rune) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
