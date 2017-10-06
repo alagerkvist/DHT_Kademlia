@@ -33,9 +33,9 @@ func (bucket *bucket) AddContact(contact Contact) {
 		} else{
 			element = bucket.findElementInList(contact, bucket.cacheList)
 			if element == nil{
-				bucket.list.PushFront(contact)
+				bucket.cacheList.PushFront(contact)
 			} else{
-				bucket.list.MoveToFront(element)
+				bucket.cacheList.MoveToFront(element)
 			}
 
 		}

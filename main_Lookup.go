@@ -4,18 +4,21 @@ import (
 	"./kademlia"
 	"time"
 
+	"fmt"
 )
 
 func main() {
 
 
-	numberNodes := 15
+	numberNodes := 16
 
 	//Creation of the Kademlia nodes
+	fmt.Println(kademlia.NewRandomKademliaID())
+
 	kademliaNodes := make([]kademlia.Kademlia, numberNodes)
 	networks  := kademlia.CreateWantedNetworkPrev(numberNodes)
 	//The first node is the new node
-	kademlia.MakeMoreFriendsPrev(networks, 10)
+	kademlia.MakeMoreFriendsPrev(networks, 4)
 
 
 
