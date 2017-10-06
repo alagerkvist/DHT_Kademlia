@@ -18,7 +18,7 @@ func main() {
 	kademliaNodes := make([]kademlia.Kademlia, numberNodes)
 	networks  := kademlia.CreateWantedNetworkPrev(numberNodes)
 	//The first node is the new node
-	kademlia.MakeMoreFriendsPrev(networks, 4)
+	kademlia.MakeMoreFriendsPrev(networks, 5)
 
 
 
@@ -33,12 +33,13 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
+	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
+	//kademliaNodes[0].Store("kademlia/routingtable.go")
 
-	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
-//	kademliaNodes[0].LookupData("98c52cbb1057afa0af21d602a0c5ccde4a762d0a")
+	//	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+	kademliaNodes[0].PrintFile("5cadfe84814b7c5b1f027e0a5dd4d51e89eb6429")
 	//time.Sleep(2 * time.Second)
-	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
+//	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 
 	//	go kademliaNodes[0].StartRefreshManaging()
 //	time.Sleep(250 * time.Second)

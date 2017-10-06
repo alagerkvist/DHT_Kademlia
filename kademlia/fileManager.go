@@ -26,7 +26,7 @@ type FileInfo struct {
 const filesDirectory = "kademlia/Files/"
 
 
-func (f *FileManager) checkAndStore(fileName string, data string) {
+func (f *FileManager) CheckAndStore(fileName string, data string) {
 	_, err := ioutil.ReadFile(filesDirectory + fileName)
 
 

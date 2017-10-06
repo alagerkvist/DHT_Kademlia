@@ -153,7 +153,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id *string = protocolPackage.StoredeID
 	var base64File *string = protocolPackage.File
-	network.fileManager.checkAndStore(*id, *base64File)
+	network.fileManager.CheckAndStore(*id, *base64File)
 }
 
 func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){

@@ -80,7 +80,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 		} else if !isForNode && newResponse.newContacts == nil{
 			fmt.Println("response: " + *newResponse.data)
 			contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
-			kademlia.network.fileManager.checkAndStore(targetID.String(), *newResponse.data)
+			kademlia.network.fileManager.CheckAndStore(targetID.String(), *newResponse.data)
 
 			for ; countEndThread + 1 < alpha; countEndThread++{
 				//Get the last responses and check if they have the file
@@ -147,8 +147,10 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 				break
 			}
 		} else {
-			countEndThread = 0
-			channelToSendRequest <- Request{nextContactToCheck, false}
+			for ; countEndThread > 0 && nextContactToCheck != nil ; countEndThread--{
+				channelToSendRequest <- Request{nextContactToCheck, false}
+				nextContactToCheck = kademlia.network.getNextContactToAsk(nodesToCheck)
+			}
 		}
 	}
 
@@ -207,12 +209,37 @@ func (kademlia *Kademlia) Store(fileName string) {
 		hash := sha256.Sum256(data)
 		idFile := NewKademliaIDFromBytes(hash[:IDLength])
 
-		fileManager.checkAndStore(idFile.String(), base64Data)
+		fileManager.CheckAndStore(idFile.String(), base64Data)
 
 		contactToSend := kademlia.LookupContact(idFile)
 		fmt.Println(contactToSend)
 		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
 	}
+}
+
+func (kademlia *Kademlia) PrintFile(fileName string) {
+	fileManager := kademlia.network.fileManager
+	completeFileName := filesDirectory + fileName
+	if !fileManager.checkIfFileExist(completeFileName) {
+		fmt.Println("File not found")
+	} else {
+		data := fileManager.readData(completeFileName)
+		dataString := string(data[:])
+
+		if CheckFileValidity(fileName, data){
+			fmt.Println(dataString)
+		}
+	}
+}
+
+func CheckFileValidity(id string, data []byte) bool{
+	hash := sha256.Sum256(data)
+	idFile := NewKademliaIDFromBytes(hash[:IDLength])
+	if !idFile.Equals(NewKademliaID(id)){
+		fmt.Println(id + " : WARNING ! Modification have been made on this file, it is not valid anymore !")
+		return false
+	}
+	return true
 }
 
 func Print(nodesToCheck []NodeToCheck) {
