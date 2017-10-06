@@ -100,4 +100,5 @@ func (bucket *bucket) Print() {
 	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
 		fmt.Println(elt.Value.(Contact))
 	}
+
 }
