@@ -33,7 +33,7 @@ func main() {
 	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 
 	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
-	kademliaNodes[0].LookupData("98c52cbb1057afa0af21d602a0c5ccde4a762d0a")
+//	kademliaNodes[0].LookupData("98c52cbb1057afa0af21d602a0c5ccde4a762d0a")
 	//time.Sleep(2 * time.Second)
 	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 

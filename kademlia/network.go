@@ -44,23 +44,17 @@ func (network *Network) Listen() {
 
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
-		fmt.Println(unMarshalMessage)
 		if err != nil {
 			log.Fatal("unmarshaling error: ", err)
 		}
-		fmt.Println(unMarshalMessage)
 		//new contact and add it to bucket
 
 		newContact := &Contact{
 			ID: NewKademliaIDFromBytes(unMarshalMessage.ClientID),
 			Address: *unMarshalMessage.Address,
 		}
-		fmt.Println(newContact)
-
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
 		network.myRoutingTable.createTask(addContact, nil, newContact)
-		fmt.Println("******************")
-		fmt.Println(unMarshalMessage.GetMessageSent())
 
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
@@ -136,6 +130,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 	}
 	typeOfMessage := ProtocolPackage_FINDNODE
 	responsePkg := &ProtocolPackage{
+		ClientID: network.myRoutingTable.me.ID.getBytes(),
 		Address: &network.myRoutingTable.me.Address,
 		MessageSent: &typeOfMessage,
 		ContactsKNearest: sendContacts,
@@ -172,6 +167,7 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 		file := base64.StdEncoding.EncodeToString(network.fileManager.readData(filesDirectory + id))
 
 		responsePkg := &ProtocolPackage{
+			ClientID: network.myRoutingTable.me.ID.getBytes(),
 			Address: &network.myRoutingTable.me.Address,
 			MessageSent: &typeOfMessage,
 			ContactsKNearest: nil,

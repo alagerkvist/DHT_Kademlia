@@ -30,6 +30,8 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 		case getClosest:
 			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, false)
 		case addContact:
+			fmt.Println("Contact to add")
+			fmt.Println(*task.contactRequested)
 			routingTable.AddContact(*task.contactRequested)
 		case removeContact:
 			routingTable.RemoveContact(*task.contactRequested)
