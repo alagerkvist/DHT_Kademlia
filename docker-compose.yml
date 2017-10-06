@@ -7,7 +7,7 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.21
-    command: "go run mainSourceNodes.go 0 1 10.5.0. 8080 > output.txt 2>&1 &"
+    command: "go run mainSourceNodes.go 0 5 10.5.0. 8080 > output.txt 2>&1 &"
   supernode2:
     build: .
     expose:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"encoding/base64"
+	"strings"
 )
 
 func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
@@ -30,7 +31,8 @@ func MakeMoreFriends(network *Network, id int, numberSrcNodes int, ipPrefix stri
 }
 
 func AddSourceNodes(network *Network, numberSourcesNodes int, ip string, port string){
-	ipPrefix := ip[: len(ip) - 1]
+	ipPrefixAux := strings.Split(ip,".")
+	ipPrefix := ipPrefixAux[0] +"."+ipPrefixAux[1]+"."+ipPrefixAux[2]+"."
 	for j := 0 ; j < numberSourcesNodes ; j++{
 			newKademliaID := strconv.FormatInt(int64(j), 16) + "00000000000000000000000000000000000000000"
 			newContact := NewContact(NewKademliaID(newKademliaID), ipPrefix + strconv.Itoa(20 + j + 1) + ":" + port)
