@@ -9,6 +9,9 @@ import (
 	"net"
 
 	"strconv"
+	"mime"
+	"os/exec"
+	"log"
 )
 
 func main() {
@@ -109,21 +112,27 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 	fmt.Println("***********")
 }
 
+func takeName(words []string) string{
+	return strings.Split(words[2],"=")[1]
+}
 func processCommandFile(words []string, kadem *kademlia.Kademlia){
 
 	var command = words[1]
 	switch command {
 	case "new":
-		fmt.Println("$ file new --name=NAME")
+		fmt.Println("$ file new")
+		kadem.GenerateNewFile()
 		break
 	case "save":
 		fmt.Println("$ file save --name=NAME")
+		kadem.Store(takeName(words))
 		break
 	case "ping":
 		fmt.Println("$ file ping --name=NAME")
 		break
 	case "take":
 		fmt.Println("$ file find --name=NAME")
+		kadem.LookupData(takeName(words))
 		break
 	case "rm":
 		fmt.Println("$ file rm --name=NAME")
@@ -134,8 +143,13 @@ func processCommandFile(words []string, kadem *kademlia.Kademlia){
 	case "pin":
 		fmt.Println("$ file pin true/false")
 		break
-	case "ls":
-		fmt.Println("$ file pin true/false")
+	case "list":
+		fmt.Println("$ file list")
+		cmd := exec.Command("ls", "./kademlia/Files")
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println("$ file list")
+		}
 		break
 	default:
 		fmt.Println("command not found")
@@ -183,10 +197,10 @@ func printHelp(){
 	fmt.Println("Return the routing table")
 	fmt.Println("$ lookup")
 	fmt.Println("")
-	fmt.Println("Createnew file")
-	fmt.Println("$ file new --name=NAME")
+	fmt.Println("Createnew file in your node, random name")
+	fmt.Println("$ file new")
 	fmt.Println("")
-	fmt.Println("Save file")
+	fmt.Println("Save file in the network")
 	fmt.Println("$ file save --name=NAME")
 	fmt.Println("")
 	fmt.Println("Ping file")

@@ -85,7 +85,6 @@ func (network *Network) Listen() {
 
 }
 
-
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	fmt.Print("Ping processor:   ")
 	fmt.Print(remoteaddr)
@@ -111,7 +110,6 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	}
 
 }
-
 
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
 	respChan := make(chan []Contact)
@@ -148,7 +146,6 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 		log.Fatal("marshaling find contact response error: ", err)
 	}
 }
-
 
 func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id *string = protocolPackage.StoredeID
@@ -188,9 +185,6 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 		}
 	}
 }
-
-
-
 
 func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
@@ -258,8 +252,6 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 	return nil
 }
 
-
-
 func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Response{
 
 	result := network.marshalFindValue(id, contact)
@@ -305,8 +297,6 @@ func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*Prot
 	return network.Sender(data, contact.Address, true)
 }
 
-
-
 func (network *Network) SendPingMessage(contact *Contact) {
 	network.marshalPing(contact)
 }
@@ -329,8 +319,6 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	}
 	return network.Sender(data, contacts.Address, true)
 }
-
-
 
 func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *Contact) Response{
 	result := network.marshalFindContact(findThisID, contact)
@@ -374,8 +362,6 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 	return network.Sender(data, contact.Address, true)
 }
 
-
-
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
 
 	for i := 0 ; i < len(contactsToSend) ; i++{
@@ -383,7 +369,6 @@ func (network *Network) SendStoreMessage(fileName string, data string, contactsT
 	}
 
 }
-
 
 func (network *Network) marshalStore(fileName string, data string, contact *Contact) (*ProtocolPackage){
 
@@ -405,12 +390,9 @@ func (network *Network) marshalStore(fileName string, data string, contact *Cont
 	return network.Sender(marshalData, contact.Address, false)
 }
 
-
-
 func (network *Network) GetMyRoutingTable() *RoutingTable{
 	return network.myRoutingTable
 }
-
 
 func (network *Network) PrintNetwork () {
 	fmt.Println(network.myRoutingTable.me.ID)
@@ -418,7 +400,6 @@ func (network *Network) PrintNetwork () {
 	fmt.Println(network.myRoutingTable.me.Address)
 	return
 }
-
 
 func (network *Network) TestKademliaPing(contact *Contact) {
 	for{
