@@ -11,7 +11,7 @@ func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
 
 	var newNetwork Network = Network{}
 	var newKademliaId *KademliaID = NewRandomKademliaID()
-
+	fmt.Println(newKademliaId)
 	var newContact = NewContact(newKademliaId, ip + ":" + port)
 	newNetwork.myRoutingTable = NewRoutingTable(newContact)
 

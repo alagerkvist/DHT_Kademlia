@@ -22,15 +22,17 @@ func main() {
 	port := os.Args[4]
 	var network *kademlia.Network = kademlia.CreateWantedNetwork(id, prefixIp, port)
 	kademlia.MakeMoreFriends(network, id, numberSrcNodes, prefixIp, port)
-	//var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
+	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
+	kademlia.AssingNetworkKademlia(network, kadem)
 	go network.Listen()
 	go network.GetMyRoutingTable().StartRoutingTableListener()
 
+	kadem.GetNetwork().GetMyRoutingTable().Print()
 
 	for {
-		time.Sleep(20 * time.Second)
+		time.Sleep(10 * time.Second)
 		fmt.Println("supernode")
-		//kadem.GetNetwork().GetMyRoutingTable().Print()
+		kadem.GetNetwork().GetMyRoutingTable().Print()
 		fmt.Println("^^^^^^^")
 	}
 /*

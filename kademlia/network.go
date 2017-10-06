@@ -68,8 +68,8 @@ func (network *Network) Listen() {
 			go network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_FINDNODE:
-			fmt.Println("\n\n --- find node --- \n")
-			network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
+			//fmt.Println("\n\n --- find node --- \n")
+			//network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
 			//fmt.Println("\n\n --- find node --- \n")
 			go network.processFindConctactMessage(unMarshalMessage, remoteaddr, ser)
 
@@ -196,8 +196,8 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 
 	fmt.Println("sender", address)
 	p :=  make([]byte, packetSize)
-	fmt.Println(marshaledObject)
-	fmt.Println(string(marshaledObject))
+	//fmt.Println(marshaledObject)
+	//fmt.Println(string(marshaledObject))
 	conn, err := net.Dial("udp", address)
 
 	if err != nil {
@@ -248,7 +248,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 
 			conn.Close()
 			fmt.Println("unMarshalledResponse")
-			fmt.Println(unMarshalledResponse)
+			//fmt.Println(unMarshalledResponse)
 			return unMarshalledResponse
 		} else {
 			fmt.Printf("175 Some error %v\n", err)

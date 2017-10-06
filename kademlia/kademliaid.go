@@ -3,6 +3,7 @@ package kademlia
 import (
 	"encoding/hex"
 	"math/rand"
+	"time"
 )
 
 const IDLength = 20
@@ -43,6 +44,7 @@ func NewKademliaIDFromBytes(data []byte) *KademliaID{
 
 //return an [160bits]array of random uint8=72
 func NewRandomKademliaID() *KademliaID {
+	rand.Seed(time.Now().UnixNano())
 	newKademliaID := KademliaID{}
 	for i := 0; i < IDLength; i++ {
 		newKademliaID[i] = uint8(rand.Intn(256))

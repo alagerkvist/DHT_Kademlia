@@ -28,7 +28,7 @@ func main() {
 	go network.Listen()
 	go network.GetMyRoutingTable().StartRoutingTableListener()
 
-	kadem.GetNetwork().GetMyRoutingTable().Print()
+	//kadem.GetNetwork().GetMyRoutingTable().Print()
 	go kadem.LookupContact(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID)
 
 	printHelp()
@@ -66,16 +66,16 @@ func processText(text string, kadem *kademlia.Kademlia){
 	var command = words[0]
 	switch command {
 	case "ping":
-		go processCommandPing(words, kadem)
+		processCommandPing(words, kadem)
 		break
 	case "info":
-		go processCommandInfo(words)
+		processCommandInfo(words)
 		break
 	case "routingTable":
-		go processCommandRoutingTable(words, kadem)
+		processCommandRoutingTable(words, kadem)
 		break
 	case "lookup":
-		go processCommandLookup(words, kadem)
+		processCommandLookup(words, kadem)
 		break
 	case "help":
 		break

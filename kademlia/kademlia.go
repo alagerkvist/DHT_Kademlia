@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 )
 
-const alpha = 1
+const alpha = 3
 
 type Kademlia struct {
 	network *Network
