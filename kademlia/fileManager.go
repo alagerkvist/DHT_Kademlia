@@ -94,7 +94,7 @@ func (kademlia *Kademlia) checkFiles(){
 }
 
 func ListFiles(){
-	files, err := ioutil.ReadDir("./")
+	files, err := ioutil.ReadDir("./kademlia/Files")
 	if err != nil {
 		log.Fatal(err)
 	}

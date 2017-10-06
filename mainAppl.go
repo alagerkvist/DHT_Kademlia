@@ -9,9 +9,9 @@ import (
 	"net"
 
 	"strconv"
-	"mime"
+	//"mime"
 	"os/exec"
-	"log"
+	//"log"
 )
 
 func main() {
@@ -33,6 +33,13 @@ func main() {
 
 	//kadem.GetNetwork().GetMyRoutingTable().Print()
 	go kadem.LookupContact(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+
+	cmd := exec.Command("mkdir", "./kademlia/Files")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("$ file list")
+	}
+
 
 	printHelp()
 
@@ -87,7 +94,7 @@ func processText(text string, kadem *kademlia.Kademlia){
 	default:
 		fmt.Println("command not found")
 	}
-	printHelp()
+	//printHelp()
 }
 
 func processCommandLookup (words []string, kadem *kademlia.Kademlia){
@@ -144,20 +151,11 @@ func processCommandFile(words []string, kadem *kademlia.Kademlia){
 		fmt.Println("$ file pin true/false")
 		break
 	case "list":
-		fmt.Println("$ file list")
-		cmd := exec.Command("ls", "./kademlia/Files")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println("$ file list")
-		}
+		kademlia.ListFiles()
 		break
 	default:
 		fmt.Println("command not found")
 	}
-
-
-	fmt.Println("Make file persistent or not")
-	fmt.Println("$ file pin true/false")
 
 }
 func processCommandInfo(words []string)  {
