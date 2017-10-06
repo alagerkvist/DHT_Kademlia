@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-const bucketSize = 10
-const nb_task_managed = 100
+const bucketSize = 20
+const nb_task_managed = 1000
 
 type RoutingTable struct {
 	me      Contact

@@ -77,6 +77,8 @@ func processText(text string, kadem *kademlia.Kademlia){
 	case "lookup":
 		processCommandLookup(words, kadem)
 		break
+	case "file":
+		processCommandFile(words,kadem)
 	case "help":
 		break
 	default:
@@ -107,6 +109,43 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 	fmt.Println("***********")
 }
 
+func processCommandFile(words []string, kadem *kademlia.Kademlia){
+
+	var command = words[1]
+	switch command {
+	case "new":
+		fmt.Println("$ file new --name=NAME")
+		break
+	case "save":
+		fmt.Println("$ file save --name=NAME")
+		break
+	case "ping":
+		fmt.Println("$ file ping --name=NAME")
+		break
+	case "take":
+		fmt.Println("$ file find --name=NAME")
+		break
+	case "rm":
+		fmt.Println("$ file rm --name=NAME")
+		break
+	case "print":
+		fmt.Println("$ file print --name=NAME")
+		break
+	case "pin":
+		fmt.Println("$ file pin true/false")
+		break
+	case "ls":
+		fmt.Println("$ file pin true/false")
+		break
+	default:
+		fmt.Println("command not found")
+	}
+
+
+	fmt.Println("Make file persistent or not")
+	fmt.Println("$ file pin true/false")
+
+}
 func processCommandInfo(words []string)  {
 	if  len(words) != 1 || words[0] != "info" {
 		fmt.Println("error INFO")
@@ -140,5 +179,32 @@ func printHelp(){
 	fmt.Println("")
 	fmt.Println("Return the routing table")
 	fmt.Println("$ routingTable")
+	fmt.Println("")
+	fmt.Println("Return the routing table")
+	fmt.Println("$ lookup")
+	fmt.Println("")
+	fmt.Println("Createnew file")
+	fmt.Println("$ file new --name=NAME")
+	fmt.Println("")
+	fmt.Println("Save file")
+	fmt.Println("$ file save --name=NAME")
+	fmt.Println("")
+	fmt.Println("Ping file")
+	fmt.Println("$ file ping --name=NAME")
+	fmt.Println("")
+	fmt.Println("Find and Download file")
+	fmt.Println("$ file take --name=NAME")
+	fmt.Println("")
+	fmt.Println("Remove file")
+	fmt.Println("$ file rm --name=NAME")
+	fmt.Println("")
+	fmt.Println("Print data of a file")
+	fmt.Println("$ file print --name=NAME")
+	fmt.Println("")
+	fmt.Println("Make file persistent or not")
+	fmt.Println("$ file pin true/false")
+	fmt.Println("")
+	fmt.Println("List files in your node")
+	fmt.Println("$ file list")
 	fmt.Println("*****************************************")
 }
