@@ -77,7 +77,7 @@ func (kademlia *Kademlia) checkFiles(){
 
 	for{
 		time.Sleep(1 * time.Minute)
-		for k, file := range kademlia.network.fileManager.filesStored {
+		for k, file := range kademlia.network.FileManager.filesStored {
 
 				//Refreshing each file that has not been refresh from one hour
 			if time.Since(file.lastTimeRefreshed).Hours() >= 1 {
@@ -90,7 +90,7 @@ func (kademlia *Kademlia) checkFiles(){
 
 				//Delete expirated files
 			} else if !file.immutable && time.Since(file.initialStore).Hours() >= file.expirationTime{
-				kademlia.network.fileManager.RemoveFile(k)
+				kademlia.network.FileManager.RemoveFile(k)
 			}
 		}
 	}

@@ -80,7 +80,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 		} else if !isForNode && newResponse.newContacts == nil{
 			fmt.Println("response: " + *newResponse.data)
 			contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
-			kademlia.network.fileManager.CheckAndStore(targetID.String(), *newResponse.data)
+			kademlia.network.FileManager.CheckAndStore(targetID.String(), *newResponse.data)
 
 			for ; countEndThread + 1 < alpha; countEndThread++{
 				//Get the last responses and check if they have the file
@@ -197,7 +197,7 @@ func (network *Network) getNextContactToAsk(nodesToCheck []NodeToCheck) *Contact
 //Store is the method of KAdemlia to Store data
 // Params: data array of Bytes.
 func (kademlia *Kademlia) Store(fileName string) {
-	fileManager := kademlia.network.fileManager
+	fileManager := kademlia.network.FileManager
 
 	if !fileManager.checkIfFileExist(fileName){
 		fmt.Println("File not found")
@@ -218,7 +218,7 @@ func (kademlia *Kademlia) Store(fileName string) {
 }
 
 func (kademlia *Kademlia) PrintFile(fileName string) {
-	fileManager := kademlia.network.fileManager
+	fileManager := kademlia.network.FileManager
 	completeFileName := filesDirectory + fileName
 	if !fileManager.checkIfFileExist(completeFileName) {
 		fmt.Println("File not found")

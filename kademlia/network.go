@@ -13,7 +13,7 @@ import (
 
 type Network struct {
 	myRoutingTable *RoutingTable
-	fileManager *FileManager
+	FileManager *FileManager
 }
 
 const packetSize = 4096
@@ -153,18 +153,18 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id *string = protocolPackage.StoredeID
 	var base64File *string = protocolPackage.File
-	network.fileManager.CheckAndStore(*id, *base64File)
+	network.FileManager.CheckAndStore(*id, *base64File)
 }
 
 func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id string = NewKademliaIDFromBytes(protocolPackage.FindValue).String()
 
-	if !network.fileManager.checkIfFileExist(filesDirectory + id){
+	if !network.FileManager.checkIfFileExist(filesDirectory + id){
 		network.processFindConctactMessage(protocolPackage, remoteaddr, ser)
 	} else {
 		typeOfMessage := ProtocolPackage_FINDVALUE
 
-		file := base64.StdEncoding.EncodeToString(network.fileManager.readData(filesDirectory + id))
+		file := base64.StdEncoding.EncodeToString(network.FileManager.readData(filesDirectory + id))
 
 		responsePkg := &ProtocolPackage{
 			ClientID: network.myRoutingTable.me.ID.getBytes(),

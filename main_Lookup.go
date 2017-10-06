@@ -37,7 +37,7 @@ func main() {
 	//kademliaNodes[0].Store("kademlia/routingtable.go")
 
 	//	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
-	kademliaNodes[0].PrintFile("5cadfe84814b7c5b1f027e0a5dd4d51e89eb6429")
+	kademliaNodes[0].PrintFile("98c52cbb1057afa0af21d602a0c5ccde4a762d0c")
 	//time.Sleep(2 * time.Second)
 //	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 
