@@ -60,7 +60,10 @@ func (f *FileManager) checkIfFileExist(fileName string) bool{
 
 func (f *FileManager) readData(fileName string) []byte{
 	data, _ := ioutil.ReadFile(fileName)
-	return data
+	if CheckFileValidity(fileName, data){
+		return data
+	}
+	return nil
 }
 
 
