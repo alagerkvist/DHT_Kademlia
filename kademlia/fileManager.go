@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"encoding/base64"
 	"time"
+	"log"
 )
 
 type FileManager struct{
@@ -63,7 +64,6 @@ func (f *FileManager) readData(fileName string) []byte{
 	return data
 }
 
-
 func (fileManager *FileManager) RemoveFile(filename string){
 	delete(fileManager.filesStored, filename)
 	os.Remove(filesDirectory + filename)
@@ -93,4 +93,13 @@ func (kademlia *Kademlia) checkFiles(){
 	}
 }
 
+func ListFiles(){
+	files, err := ioutil.ReadDir("./")
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+}
