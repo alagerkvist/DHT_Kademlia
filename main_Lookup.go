@@ -32,8 +32,7 @@ func main() {
 	}
 
 	time.Sleep(2 * time.Second)
-	kademlia.ListFiles()
-
+	kademliaNodes[0].StartRefreshManaging()
 	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 	//kademliaNodes[0].Store("kademlia/routingtable.go")
 

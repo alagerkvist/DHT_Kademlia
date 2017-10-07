@@ -214,7 +214,8 @@ func (kademlia *Kademlia) Store(fileName string) {
 		fileManager.CheckAndStore(idFile.String(), base64Data)
 
 		contactToSend := kademlia.LookupContact(idFile)
-		//fmt.Println(contactToSend)
+		fmt.Println("File will be send to these contacts:")
+		Print(contactToSend)
 		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
 	}
 }
