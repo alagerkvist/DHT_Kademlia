@@ -9,6 +9,7 @@ import (
 	//"bufio"
 	//"strings"
 	"time"
+	"os/exec"
 )
 
 func main() {
@@ -29,11 +30,18 @@ func main() {
 
 	kadem.GetNetwork().GetMyRoutingTable().Print()
 
+	cmd := exec.Command("mkdir", "./kademlia/Files")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("$ file list")
+	}
+
 	for {
 		time.Sleep(10 * time.Second)
-		fmt.Println("supernode")
-		kadem.GetNetwork().GetMyRoutingTable().Print()
-		fmt.Println("^^^^^^^")
+		//fmt.Println("supernode")
+		//kadem.GetNetwork().GetMyRoutingTable().Print()
+		kademlia.ListFiles()
+		//fmt.Println("^^^^^^^")
 	}
 
 }
