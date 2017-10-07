@@ -43,17 +43,18 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 		}
 
 		_, err = f.Write(d1)
-		file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
-		fileManager.filesStored[fileName] = file
+		//file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
+		//fileManager.filesStored[fileName] = file
 		if err != nil{
 			fmt.Println("\n !!! Error while writing in the file: ")
 			fmt.Println(err)
 		}
 		defer f.Close()
-	}else{
+	}
+	//else{
 		//fileInfo := fileManager.filesStored[fileName]
 		//fileInfo.lastTimeRefreshed = time.Now().Local()
-	}
+	//}
 }
 
 func (f *FileManager) checkIfFileExist(fileName string) bool{

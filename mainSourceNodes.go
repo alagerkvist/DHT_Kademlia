@@ -28,7 +28,7 @@ func main() {
 	go network.Listen()
 	go network.GetMyRoutingTable().StartRoutingTableListener()
 
-	kadem.GetNetwork().GetMyRoutingTable().Print()
+	//kadem.GetNetwork().GetMyRoutingTable().Print()
 
 	cmd := exec.Command("mkdir", "./kademlia/Files")
 	err := cmd.Run()
@@ -40,7 +40,9 @@ func main() {
 		time.Sleep(10 * time.Second)
 		//fmt.Println("supernode")
 		//kadem.GetNetwork().GetMyRoutingTable().Print()
+		fmt.Println("^^^ID"+kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String()+"^^^FILES")
 		kademlia.ListFiles()
+		fmt.Println("*********************")
 		//fmt.Println("^^^^^^^")
 	}
 

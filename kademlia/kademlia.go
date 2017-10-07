@@ -204,9 +204,7 @@ func (network *Network) getNextContactToAsk(nodesToCheck []NodeToCheck) *Contact
 func (kademlia *Kademlia) Store(fileName string) {
 	fileManager := kademlia.network.FileManager
 
-	fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-	fmt.Println("$$$$$$$$$       saving in other node       $$$$$$$$$")
-	fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+	//fmt.Println("$$$$$$$$$       saving in other node       $$$$$$$$$")
 
 	if !fileManager.checkIfFileExist(fileName){
 		fmt.Println("File not found")
@@ -221,7 +219,7 @@ func (kademlia *Kademlia) Store(fileName string) {
 		fileManager.CheckAndStore(idFile.String(), base64Data)
 
 		contactToSend := kademlia.LookupContact(idFile)
-		fmt.Println("File will be send to these contacts:")
+		//fmt.Println("File will be send to these contacts:")
 		Print(contactToSend)
 		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
 	}

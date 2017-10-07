@@ -1,0 +1,29 @@
+Turn on the scenary
+5 supernodes
+000..
+100..
+200..
+300..
+400..
+1 normal node "name web"
+
+go into the node 1 make ping to some node (WE need to fix that)
+
+scale to 10 normal nodes
+
+print the routing table before and. after in some super node to look how changes after the lookuop
+
+go into some random node create a file
+save the file
+
+go to other node
+print the list of files to check the file saved
+print the content of the file
+
+scale to 100 little by little
+
+check the routing table of the supernodes to check the 20 limit..
+
+go into some new node the find the file created before
+
+

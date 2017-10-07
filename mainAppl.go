@@ -12,6 +12,7 @@ import (
 	//"mime"
 	"os/exec"
 	//"log"
+	"time"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 	var network *kademlia.Network = kademlia.CreateRandomNetworks(numberSrcNodes, ip, port)
 	kademlia.AddSourceNodes(network, numberSrcNodes, ip, port)
 	fmt.Println(network.GetMyRoutingTable().GetMyContact())
-	fmt.Println(network.GetMyRoutingTable())
+	//fmt.Println(network.GetMyRoutingTable())
 	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
 	kademlia.AssingNetworkKademlia(network, kadem)
 
@@ -43,12 +44,24 @@ func main() {
 
 	printHelp()
 
+	go printTimmerMyListOFFiles(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String())
 	for scanner.Scan() {
 		processText(scanner.Text(), kadem)
 	}
 }
 
 
+func printTimmerMyListOFFiles(ID string){
+	for {
+		time.Sleep(10 * time.Second)
+		//fmt.Println("supernode")
+		//kadem.GetNetwork().GetMyRoutingTable().Print()
+		fmt.Println("^^^ID"+ID+"^^^FILES")
+		kademlia.ListFiles()
+		fmt.Println("*********************")
+		//fmt.Println("^^^^^^^")
+	}
+}
 func getMyIp() string{
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
@@ -127,28 +140,29 @@ func processCommandFile(words []string, kadem *kademlia.Kademlia){
 	var command = words[1]
 	switch command {
 	case "new":
-		fmt.Println("$ file new")
+		//fmt.Println("$ file new")
 		kadem.GenerateNewFile()
 		break
 	case "save":
-		fmt.Println("$ file save --name=NAME")
+		//fmt.Println("$ file save --name=NAME")
 		kadem.Store(takeName(words))
 		break
 	case "ping":
-		fmt.Println("$ file ping --name=NAME")
+		//fmt.Println("$ file ping --name=NAME")
 		break
 	case "take":
-		fmt.Println("$ file find --name=NAME")
+		//fmt.Println("$ file find --name=NAME")
 		kadem.LookupData(takeName(words))
 		break
 	case "rm":
-		fmt.Println("$ file rm --name=NAME")
+		//fmt.Println("$ file rm --name=NAME")
 		break
 	case "print":
-		fmt.Println("$ file print --name=NAME")
+		//fmt.Println("$ file print --name=NAME")
+		kadem.PrintFile(takeName(words))
 		break
 	case "pin":
-		fmt.Println("$ file pin true/false")
+		//fmt.Println("$ file pin true/false")
 		break
 	case "list":
 		kademlia.ListFiles()
@@ -164,7 +178,7 @@ func processCommandInfo(words []string)  {
 		return
 	}
 	fmt.Println("my info")
-	fmt.Println("***********")
+	//fmt.Println("***********")
 }
 
 func processCommandRoutingTable(words []string, kadem *kademlia.Kademlia){
@@ -175,7 +189,7 @@ func processCommandRoutingTable(words []string, kadem *kademlia.Kademlia){
 
 	fmt.Println("my routing table")
 	kadem.GetNetwork().GetMyRoutingTable().Print()
-	fmt.Println("***********")
+	//fmt.Println("***********")
 }
 
 func printHelp(){

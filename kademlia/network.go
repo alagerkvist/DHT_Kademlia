@@ -56,26 +56,21 @@ func (network *Network) Listen() {
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
 		network.myRoutingTable.createTask(addContact, nil, newContact)
 
-		fmt.Println("*******************************************************************")
+/*		fmt.Println("*******************************************************************")
 		fmt.Println("*******************************************************************")
 		fmt.Println(unMarshalMessage.GetMessageSent())
 		fmt.Println("*******************************************************************")
-		fmt.Println("*******************************************************************")
+		fmt.Println("*******************************************************************")*/
 
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
-			fmt.Printf("Ping")
+			//fmt.Printf("Ping")
 			network.processPing(unMarshalMessage, remoteaddr, ser)
 			//fmt.Printf("Ping")
 			go network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_STORE:
-			fmt.Println("*******************************************************************")
-			fmt.Println("*******************************************************************")
-			fmt.Println("*******************            store            *******************")
-			fmt.Println(unMarshalMessage)
-			fmt.Printf("*******************************************************************")
-			fmt.Printf("*******************************************************************")
+			//fmt.Println("*******************            store       Listerner     *******************")
 			go network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_FINDNODE:
@@ -97,9 +92,9 @@ func (network *Network) Listen() {
 }
 
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
-	fmt.Print("Ping processor:   ")
-	fmt.Print(remoteaddr)
-	fmt.Print(protocolPackage)
+	//fmt.Print("Ping processor:   ")
+	//fmt.Print(remoteaddr)
+	//fmt.Print(protocolPackage)
 
 	typeOfMessage := ProtocolPackage_PING
 	pongPacket := &ProtocolPackage{
@@ -109,10 +104,10 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
 	if err == nil {
-		fmt.Println("pong")
+		//fmt.Println("pong")
 		_,err := ser.WriteToUDP(marshalledpongPacket, remoteaddr)
 		if err != nil {
-			fmt.Printf("Couldn’t send response %v", err)
+			//fmt.Printf("Couldn’t send response %v", err)
 			network.myRoutingTable.RemoveContact(NewContact(NewKademliaIDFromBytes(protocolPackage.ClientID), *protocolPackage.Address))
 		}
 
@@ -149,7 +144,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 		//fmt.Println("Response will be send from: " + network.myRoutingTable.me.String() + " about closest nodes")
 		_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
 		if err != nil {
-			fmt.Printf("Couldn't send response %v", err)
+			//fmt.Printf("Couldn't send response %v", err)
 			network.myRoutingTable.RemoveContact(NewContact(NewKademliaIDFromBytes(protocolPackage.ClientID), *protocolPackage.Address))
 		}
 
@@ -199,22 +194,22 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 
 func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
-	fmt.Println("sender", address)
+	//fmt.Println("sender", address)
 	p :=  make([]byte, packetSize)
 	//fmt.Println(marshaledObject)
 	//fmt.Println(string(marshaledObject))
 	conn, err := net.Dial("udp", address)
 
 	if err != nil {
-		fmt.Printf("126 Some error %v", err)
+		//fmt.Printf("126 Some error %v", err)
 		return nil
 	}
 	//fmt.Fprintf(conn, string(marshaledObject))
 	conn.Write(marshaledObject)
-	fmt.Println("watting answer")
+	//fmt.Println("watting answer")
 	if answerWanted {
 		n, err := conn.Read(p)
-		fmt.Println("answer")
+		//fmt.Println("answer")
 		if err == nil {
 
 			unMarshalledResponse := &ProtocolPackage{}
@@ -252,7 +247,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			}
 
 			conn.Close()
-			fmt.Println("unMarshalledResponse")
+			//fmt.Println("unMarshalledResponse")
 			//fmt.Println(unMarshalledResponse)
 			return unMarshalledResponse
 		} else {
@@ -323,8 +318,8 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	}
 
 	data, err := proto.Marshal(marshalPackage)
-	fmt.Println(marshalPackage)
-	fmt.Println(data)
+	//fmt.Println(marshalPackage)
+	//fmt.Println(data)
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
@@ -374,9 +369,7 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 }
 
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
-	fmt.Println("====================================================")
 	fmt.Println("==================== SEND STORE   ==================")
-	fmt.Println("====================================================")
 	for i := 0 ; i < len(contactsToSend) ; i++{
 		go network.marshalStore(fileName, data, contactsToSend[i].contact)
 	}
