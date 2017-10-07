@@ -279,7 +279,7 @@ func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Respo
 		for i := 0 ; i < len(result.ContactsKNearest) ; i++{
 			//Create the new contact
 			newContacts[i] = NewContact(NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), *result.ContactsKNearest[i].Address)
-			newContacts[i].distance = NewKademliaIDFromBytes(result.ContactsKNearest[i].Distance)
+			newContacts[i].CalcDistance(&id)
 			//fmt.Println(newContacts[i].String())
 		}
 

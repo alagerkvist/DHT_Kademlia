@@ -51,8 +51,8 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 		}
 		defer f.Close()
 	}else{
-		fileInfo := fileManager.filesStored[fileName]
-		fileInfo.lastTimeRefreshed = time.Now().Local()
+		//fileInfo := fileManager.filesStored[fileName]
+		//fileInfo.lastTimeRefreshed = time.Now().Local()
 	}
 }
 
