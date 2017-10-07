@@ -56,6 +56,12 @@ func (network *Network) Listen() {
 		newContact.CalcDistance(network.myRoutingTable.me.ID)
 		network.myRoutingTable.createTask(addContact, nil, newContact)
 
+		fmt.Println("*******************************************************************")
+		fmt.Println("*******************************************************************")
+		fmt.Println(unMarshalMessage.GetMessageSent())
+		fmt.Println("*******************************************************************")
+		fmt.Println("*******************************************************************")
+
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			fmt.Printf("Ping")
@@ -64,7 +70,12 @@ func (network *Network) Listen() {
 			go network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_STORE:
-			//fmt.Printf("store")
+			fmt.Println("*******************************************************************")
+			fmt.Println("*******************************************************************")
+			fmt.Println("*******************            store            *******************")
+			fmt.Println(unMarshalMessage)
+			fmt.Printf("*******************************************************************")
+			fmt.Printf("*******************************************************************")
 			go network.processStoreMessage(unMarshalMessage, remoteaddr, ser)
 			break;
 		case ProtocolPackage_FINDNODE:
@@ -135,7 +146,7 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 	}
 	marshalledNodesPacket, err := proto.Marshal(responsePkg)
 	if err == nil {
-		fmt.Println("Response will be send from: " + network.myRoutingTable.me.String() + " about closest nodes")
+		//fmt.Println("Response will be send from: " + network.myRoutingTable.me.String() + " about closest nodes")
 		_,err := ser.WriteToUDP(marshalledNodesPacket, remoteaddr)
 		if err != nil {
 			fmt.Printf("Couldn't send response %v", err)
@@ -363,7 +374,9 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 }
 
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
-
+	fmt.Println("====================================================")
+	fmt.Println("==================== SEND STORE   ==================")
+	fmt.Println("====================================================")
 	for i := 0 ; i < len(contactsToSend) ; i++{
 		go network.marshalStore(fileName, data, contactsToSend[i].contact)
 	}
@@ -387,6 +400,7 @@ func (network *Network) marshalStore(fileName string, data string, contact *Cont
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
+	fmt.Println("MARSHALL STORE")
 	return network.Sender(marshalData, contact.Address, false)
 }
 
