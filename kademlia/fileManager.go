@@ -16,7 +16,7 @@ type FileManager struct{
 
 type FileInfo struct {
 	fileName string
-	lastOriginalStored time.Time
+	lastOriginalRefreshedStored time.Time
 	lastTimeRefreshed time.Time
 	initialStore time.Time
 	expirationTime float64
@@ -27,7 +27,7 @@ type FileInfo struct {
 const filesDirectory = "kademlia/Files/"
 
 
-func (f *FileManager) CheckAndStore(fileName string, data string) {
+func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 	_, err := ioutil.ReadFile(filesDirectory + fileName)
 
 
@@ -42,13 +42,17 @@ func (f *FileManager) CheckAndStore(fileName string, data string) {
 			fmt.Println(err)
 		}
 
-		fmt.Println(d1)
 		_, err = f.Write(d1)
+		file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
+		fileManager.filesStored[fileName] = file
 		if err != nil{
-			fmt.Println("\n !!! Error while writing in the file : ")
+			fmt.Println("\n !!! Error while writing in the file: ")
 			fmt.Println(err)
 		}
 		defer f.Close()
+	}else{
+		fileInfo := fileManager.filesStored[fileName]
+		fileInfo.lastTimeRefreshed = time.Now().Local()
 	}
 }
 
@@ -81,8 +85,8 @@ func (kademlia *Kademlia) checkFiles(){
 				kademlia.Store(k)
 
 				//Refreshing files owned, each 24h
-			} else if file.originalStore && time.Since(file.lastOriginalStored).Hours() >= 24{
-				file.lastOriginalStored = time.Now().Local()
+			} else if file.originalStore && time.Since(file.lastOriginalRefreshedStored).Hours() >= 24{
+				file.lastOriginalRefreshedStored = time.Now().Local()
 				kademlia.Store(k)
 
 				//Delete expirated files

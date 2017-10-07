@@ -149,9 +149,12 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 				break
 			}
 		} else {
-			for ; countEndThread > 0 && nextContactToCheck != nil ; countEndThread--{
+			if countEndThread > 0{
+				for ; countEndThread > 0 && nextContactToCheck != nil ; countEndThread--{
+					nextContactToCheck = kademlia.network.getNextContactToAsk(nodesToCheck)
+				}
+			} else{
 				channelToSendRequest <- Request{nextContactToCheck, false}
-				nextContactToCheck = kademlia.network.getNextContactToAsk(nodesToCheck)
 			}
 		}
 	}

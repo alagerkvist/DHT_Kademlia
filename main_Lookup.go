@@ -32,7 +32,7 @@ func main() {
 	}
 
 	time.Sleep(2 * time.Second)
-	kademliaNodes[0].StartRefreshManaging()
+	kademliaNodes[0].Store("mainAppl.go")
 	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 	//kademliaNodes[0].Store("kademlia/routingtable.go")
 
