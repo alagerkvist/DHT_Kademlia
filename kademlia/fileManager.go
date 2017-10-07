@@ -103,3 +103,12 @@ func ListFiles(){
 		fmt.Println(f.Name())
 	}
 }
+
+func (fileManager *FileManager) pinFile(fileName string, pin bool){
+	file, ok := fileManager.filesStored[fileName]
+	if !ok {
+		fmt.Println("This file does not exist")
+	} else {
+		file.immutable = pin
+	}
+}
