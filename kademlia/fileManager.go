@@ -11,7 +11,7 @@ import (
 
 type FileManager struct{
 	encoder *base64.Encoding
-	filesStored map[string]FileInfo
+	filesStored map[string]*FileInfo
 }
 
 type FileInfo struct {
@@ -43,18 +43,20 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 		}
 
 		_, err = f.Write(d1)
-		//file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
-		//fileManager.filesStored[fileName] = file
+		file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
+		fileManager.filesStored[fileName] = &file
 		if err != nil{
 			fmt.Println("\n !!! Error while writing in the file: ")
 			fmt.Println(err)
 		}
 		defer f.Close()
 	}
-	//else{
-		//fileInfo := fileManager.filesStored[fileName]
-		//fileInfo.lastTimeRefreshed = time.Now().Local()
-	//}
+}
+
+
+func (fileManager *FileManager) updateTime(fileName string){
+	fileInfo := fileManager.filesStored[fileName]
+	fileInfo.lastTimeRefreshed = time.Now().Local()
 }
 
 func (f *FileManager) checkIfFileExist(fileName string) bool{
@@ -75,10 +77,11 @@ func (fileManager *FileManager) RemoveFile(filename string){
 }
 
 
-func (kademlia *Kademlia) checkFiles(){
+func (kademlia *Kademlia) CheckFiles(){
 
 	for{
 		time.Sleep(1 * time.Minute)
+		fmt.Println("Check for files")
 		for k, file := range kademlia.network.FileManager.filesStored {
 
 				//Refreshing each file that has not been refresh from one hour

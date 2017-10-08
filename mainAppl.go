@@ -31,6 +31,7 @@ func main() {
 
 	go network.Listen()
 	go network.GetMyRoutingTable().StartRoutingTableListener()
+	go kadem.StartRefreshManaging()
 
 	//kadem.GetNetwork().GetMyRoutingTable().Print()
 	go kadem.LookupContact(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID)

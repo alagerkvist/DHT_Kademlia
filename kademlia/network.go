@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 	"encoding/base64"
+	"math"
 )
 
 type Network struct {
@@ -156,7 +157,12 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id *string = protocolPackage.StoredeID
 	var base64File *string = protocolPackage.File
-	network.FileManager.CheckAndStore(*id, *base64File)
+	if network.FileManager.checkIfFileExist(filesDirectory + *id){
+		network.FileManager.updateTime(*id)
+	} else{
+		network.FileManager.CheckAndStore(*id, *base64File)
+		network.SetExpirationTime(*id)
+	}
 }
 
 func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
@@ -399,6 +405,24 @@ func (network *Network) marshalStore(fileName string, data string, contact *Cont
 
 func (network *Network) GetMyRoutingTable() *RoutingTable{
 	return network.myRoutingTable
+}
+
+func (network *Network) SetExpirationTime(fileName string){
+	fileInfo := network.FileManager.filesStored[fileName]
+	responseChannel := make(chan []Contact)
+	fileID := NewKademliaID(fileName)
+	network.myRoutingTable.createTask(getClosest, responseChannel, &Contact{fileID, "", nil})
+	closestContacts := <- responseChannel
+	me := network.myRoutingTable.me
+	me.CalcDistance(fileID)
+
+	for i:=0 ; i < len(closestContacts) ; i++{
+		if i > 10 || me.Less(&closestContacts[i]){
+				fileInfo.expirationTime = 24 * math.Exp(-(float64(i)))
+				break
+		}
+	}
+
 }
 
 func (network *Network) PrintNetwork () {

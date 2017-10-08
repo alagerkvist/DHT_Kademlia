@@ -15,6 +15,8 @@ func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
 	fmt.Println(newKademliaId)
 	var newContact = NewContact(newKademliaId, ip + ":" + port)
 	newNetwork.myRoutingTable = NewRoutingTable(newContact)
+	newNetwork.FileManager = &FileManager{}
+	newNetwork.FileManager.filesStored = make(map[string]*FileInfo)
 
 	return &newNetwork
 }
@@ -50,6 +52,7 @@ func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 
 	var newContact = NewContact(NewKademliaID(newKademliaID), ipPrefix + strconv.Itoa(20 + id + 1) + ":" + port)
 	newNetwork.myRoutingTable = NewRoutingTable(newContact)
+	newNetwork.FileManager = &FileManager{&base64.Encoding{}, make(map[string]*FileInfo)}
 	return newNetwork
 }
 
@@ -68,7 +71,7 @@ func CreateWantedNetworkPrev(numberNodes int) []Network{
 		number := 1234 + i
 		var newContact = NewContact(NewKademliaID(ids[i]), "127.0.0.1:" + strconv.Itoa(number))
 		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
-		newNetworks[i].FileManager = &FileManager{&base64.Encoding{}, make(map[string]FileInfo)}
+		newNetworks[i].FileManager = &FileManager{&base64.Encoding{}, make(map[string]*FileInfo)}
 
 }
 

@@ -24,15 +24,18 @@ func main() {
 
 	kademlia.AssingNetworkKademliaPrev(networks, kademliaNodes)
 	go kademliaNodes[0].GetNetwork().GetMyRoutingTable().StartRoutingTableListener()
+	go kademliaNodes[0].StartRefreshManaging()
+	go kademliaNodes[0].CheckFiles()
 
 
 	for i:=1 ; i < numberNodes ; i++{
 		go kademliaNodes[i].GetNetwork().GetMyRoutingTable().StartRoutingTableListener()
 		go kademliaNodes[i].GetNetwork().Listen()
+
 	}
 
-	time.Sleep(2 * time.Second)
-	kademliaNodes[0].Store("mainAppl.go")
+	time.Sleep(120 * time.Second)
+	//kademliaNodes[0].Store("mainAppl.go")
 	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 	//kademliaNodes[0].Store("kademlia/routingtable.go")
 
