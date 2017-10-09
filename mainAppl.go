@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"net"
-
 	"strconv"
 	//"mime"
 	"os/exec"
@@ -15,10 +14,12 @@ import (
 	"time"
 )
 
+const PRINT_FILES_normal = false
+
 func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
-	numberSrcNodes, _ :=  strconv.Atoi(os.Args[1])
+	numberSrcNodes, _ := strconv.Atoi(os.Args[1])
 	ip := getMyIp()
 	port := "8080"
 
@@ -42,10 +43,19 @@ func main() {
 		fmt.Println("$ file list")
 	}
 
+	cmdb := exec.Command("echo \"hello\" > testFile.txt ")
+	errb := cmdb.Run()
+	if errb != nil {
+		fmt.Println("$ file list")
+	}
+
 
 	printHelp()
 
-	go printTimmerMyListOFFiles(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String())
+	if (PRINT_FILES_normal) {
+		go printTimmerMyListOFFiles(kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String())
+	}
+
 	for scanner.Scan() {
 		processText(scanner.Text(), kadem)
 	}
@@ -104,6 +114,7 @@ func processText(text string, kadem *kademlia.Kademlia){
 	case "file":
 		processCommandFile(words,kadem)
 	case "help":
+		printHelp()
 		break
 	default:
 		fmt.Println("command not found")
@@ -126,6 +137,7 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 
 
 	newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
+	//newKademliaID := words[2]
 	newContact := kademlia.NewContact(kademlia.NewKademliaID(newKademliaID), "10.5.0." + strconv.Itoa(21) + ":" + strconv.Itoa(8080))
 	kadem.GetNetwork().SendPingMessage(&newContact)
 
@@ -134,7 +146,10 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 }
 
 func takeName(words []string) string{
-	return strings.Split(words[2],"=")[1]
+	if(len(words) > 2) {
+		return strings.Split(words[2], "=")[1]
+	}
+	return ""
 }
 func processCommandFile(words []string, kadem *kademlia.Kademlia){
 

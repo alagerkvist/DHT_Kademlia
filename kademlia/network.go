@@ -19,6 +19,8 @@ type Network struct {
 
 const packetSize = 4096
 
+const PRINT_PONG = true
+
 /** Listen
 *	PARAM: network
 * Listen for incoming requests
@@ -49,7 +51,7 @@ func (network *Network) Listen() {
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
-			log.Fatal("49 unmarshaling error: ", err)
+			log.Fatal("unmarshaling error: ", err)
 		}
 		//new contact and add it to bucket
 
@@ -69,7 +71,7 @@ func (network *Network) Listen() {
 		switch unMarshalMessage.GetMessageSent() {
 		case ProtocolPackage_PING:
 			//fmt.Printf("Ping")
-			network.processPing(unMarshalMessage, remoteaddr, ser)
+			//network.processPing(unMarshalMessage, remoteaddr, ser)
 			//fmt.Printf("Ping")
 			go network.processPing(unMarshalMessage, remoteaddr, ser)
 			break;
@@ -103,9 +105,7 @@ func (network *Network) Listen() {
 * Process the ping request
  */
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
-	//fmt.Print("Ping processor:   ")
-	//fmt.Print(remoteaddr)
-	//fmt.Print(protocolPackage)
+
 
 	typeOfMessage := ProtocolPackage_PING
 	pongPacket := &ProtocolPackage{
@@ -115,7 +115,13 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 	}
 	marshalledpongPacket, err := proto.Marshal(pongPacket)
 	if err == nil {
-		//fmt.Println("pong")
+		if(PRINT_PONG){
+			fmt.Print("Ping processor:   ")
+			fmt.Print(remoteaddr)
+			fmt.Print(protocolPackage)
+			fmt.Println("pong")
+		}
+
 		_,err := ser.WriteToUDP(marshalledpongPacket, remoteaddr)
 		if err != nil {
 			//fmt.Printf("Couldn’t send response %v", err)
@@ -289,7 +295,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			}
 
 			if err != nil {
-				log.Fatal("252 unmarshaling error: ", err)
+				log.Fatal("unmarshaling error: ", err)
 			}
 
 			conn.Close()
@@ -536,3 +542,9 @@ func (network *Network) PrintNetwork () {
 	return
 }
 
+func (network *Network) TestKademliaPing(contact *Contact) {
+	for{
+		time.Sleep(2 * time.Second)
+		go network.SendPingMessage(contact)
+	}
+}

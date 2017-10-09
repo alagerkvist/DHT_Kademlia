@@ -47,7 +47,7 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 
 }
 
-// Print a Task
+
 func (task *Task) Print(){
 	fmt.Print("* Task:")
 	fmt.Println(task.idType)
