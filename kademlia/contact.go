@@ -5,7 +5,11 @@ import (
 	"sort"
 )
 
-//A Contact is one node it has one ID KademliaID, one address and one distance
+/** A contact define a node:
+* ID: the 160 bits address of the node
+* Address: IP:PORT of the node
+* distance: the distance from an other node
+*/
 type Contact struct {
 	ID       *KademliaID
 	Address  string
@@ -17,15 +21,23 @@ func NewContact(id *KademliaID, address string) Contact {
 	return Contact{id, address, nil}
 }
 
-//CalcDistance is a method of Contact that has one KademliaId as param and it is void.
+/** CalcDistance
+* PARAM: contact: the contact to modify the distance parameter
+*		 target: the kademlia ID to which we have to compute the distance
+* Modify the field "distance" of contact to have the distance between contact and target
+*/
 func (contact *Contact) CalcDistance(target *KademliaID) {
 	//this function uses the function CalcDistance of the KademliaId and
 	//puts the returned value on the distance field of the contact
 	contact.distance = contact.ID.CalcDistance(target)
 }
 
-//Less is a method of Contact that return the bool value of the KAdemliaId.less() using as param otherContact.
-func (contact *Contact) Less(otherContact *Contact) bool {
+/** Less
+* PARAM: contact: the bucket to retrieve the contacts
+*		 otherContact: the kademlia ID to which we have to compute the distance
+*
+* OUTPUT: If contact has a smaller distance than otherContact
+*/func (contact *Contact) Less(otherContact *Contact) bool {
 	return contact.distance.Less(otherContact.distance)
 }
 
@@ -49,7 +61,7 @@ func (candidates *ContactCandidates) GetContacts(count int) []Contact {
 	return candidates.contacts[:count]
 }
 
-// Sort is a method of ContactCandidates that sort the candidates
+// Sort is a method of ContactCandidates that sort the candidates with distance
 func (candidates *ContactCandidates) Sort() {
 	sort.Sort(candidates)
 }
