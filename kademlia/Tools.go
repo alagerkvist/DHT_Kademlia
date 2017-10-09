@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+/**
+*	CreateRandomNetworks
+* numberNodes: the number of big nodes
+* ip: the ip
+* port: the port of the nodes
+* Create a node
+ */
 func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
 
 	var newNetwork Network = Network{}
@@ -20,6 +27,15 @@ func CreateRandomNetworks(numberNodes int, ip string, port string) *Network{
 	return &newNetwork
 }
 
+/**
+*	MakeMoreFriends
+* network
+* id: the number of important nodes
+* numberSrcNodes: the ip
+* ipPrefix: the prefix of the ip
+* port: the port
+* Add some nodes into the routing table
+ */
 func MakeMoreFriends(network *Network, id int, numberSrcNodes int, ipPrefix string, port string){
 	for j := 0 ; j < numberSrcNodes ; j++{
 		if(j != id){
@@ -31,6 +47,13 @@ func MakeMoreFriends(network *Network, id int, numberSrcNodes int, ipPrefix stri
 	}
 }
 
+/**
+*	AddSourceNodes
+* network
+* ip: ip of the node
+* port: port of this node
+* Add the main nodes into the routing table
+ */
 func AddSourceNodes(network *Network, numberSourcesNodes int, ip string, port string){
 	ipPrefixAux := strings.Split(ip,".")
 	ipPrefix := ipPrefixAux[0] +"."+ipPrefixAux[1]+"."+ipPrefixAux[2]+"."
@@ -43,6 +66,15 @@ func AddSourceNodes(network *Network, numberSourcesNodes int, ip string, port st
 }
 
 
+/**
+*	CreateWantedNetwork
+* network
+* id: the number of important nodes
+* numberSrcNodes: the ip
+* ipPrefix: the prefix of the ip
+* port: the port
+* Add the main nodes into the routing table
+ */
 func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 	var newNetwork *Network = &Network{}
 
@@ -56,9 +88,29 @@ func CreateWantedNetwork(id int, ipPrefix string, port string) *Network{
 }
 
 
+/**
+*	AssingNetworkKademlia
+* network
+* id: the number of important nodes
+* numberSrcNodes: the ip
+* ipPrefix: the prefix of the ip
+* port: the port
+* Add the main nodes into the routing table
+ */
 func AssingNetworkKademlia(networks *Network, kademlia *Kademlia){
 	kademlia.network =  networks
 }
+
+
+/**
+*	CreateWantedNetworkPrev
+* network
+* id: the number of important nodes
+* numberSrcNodes: the ip
+* ipPrefix: the prefix of the ip
+* port: the port
+* Add the main nodes into the routing table
+ */
 func CreateWantedNetworkPrev(numberNodes int) []Network{
 	var newNetworks []Network = make([]Network, numberNodes)
 	var ids []string = make([]string, numberNodes)
@@ -73,12 +125,19 @@ func CreateWantedNetworkPrev(numberNodes int) []Network{
 		newNetworks[i].FileManager = &FileManager{make(map[string]*FileInfo)}
 
 }
-
 	return newNetworks
-
 }
 
 
+/**
+*	MakeMoreFriendsPrev
+* network
+* id: the number of important nodes
+* numberSrcNodes: the ip
+* ipPrefix: the prefix of the ip
+* port: the port
+* Add the main nodes into the routing table
+ */
 func MakeMoreFriendsPrev(nodeToMakeFriends []Network, newFriends int){
 	for j := 0 ; j < len(nodeToMakeFriends) ; j++{
 
@@ -93,6 +152,10 @@ func MakeMoreFriendsPrev(nodeToMakeFriends []Network, newFriends int){
 }
 
 
+/**
+*	AssingNetworkKademliaPrev
+*   assign network to kademlia structures
+ */
 func AssingNetworkKademliaPrev(networks []Network, kademlias []Kademlia){
 	for i := 0 ; i < len(networks) ; i++{
 		kademlias[i].network =  &networks[i]

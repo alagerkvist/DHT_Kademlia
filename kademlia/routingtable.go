@@ -96,12 +96,19 @@ func (routingTable *RoutingTable) StartRoutingTableListener() {
 	go routingTable.runWorker(routingTable.channelTasks)
 }
 
+/**
+* createTask:
+* idType: the type of task
+* responseChannel: to retrieve an answer
+* contactRequested: the contact requested
+ */
 func (routingTable *RoutingTable) createTask(idType int, responseChannel chan []Contact, contactRequested *Contact) *Task{
 	var task Task = Task{idType, responseChannel, contactRequested}
 	routingTable.channelTasks <- task
 	return &task
 }
 
+//Print the routing table
 func (routingTable *RoutingTable) Print(){
 	for i:=0 ; i < IDLength * 8 ; i++ {
 		if routingTable.buckets[i].list.Len() > 0{

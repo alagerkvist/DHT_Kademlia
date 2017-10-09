@@ -8,7 +8,9 @@ import (
 
 
 
-
+/** StartRefreshManaging
+*	Check to refresh the buckets if needed each minute
+ */
 func (kademlia *Kademlia) StartRefreshManaging(){
 	var buck *bucket
 
