@@ -6,12 +6,20 @@ import (
 	"time"
 )
 
+/** Structure defining a bucket
+* list: list of the contacts in the bucket
+* cacheList: replacement list sorted by most recent view
+* lastTimeVisited: last time that a lookup has been performed on this bucket
+ */
 type bucket struct {
 	list *list.List
 	cacheList *list.List
 	lastTimeVisited time.Time
 }
 
+
+/** Initialize all the fields of the new bucket created
+ */
 func newBucket() *bucket {
 	//constructor list of lists
 	bucket := &bucket{}
@@ -20,8 +28,12 @@ func newBucket() *bucket {
 	return bucket
 }
 
-// AddContact is a method of bucket, params contact and it is void
-func (bucket *bucket) AddContact(contact Contact) {
+/** AddContact
+* PARAM: bucket: the bucket to add a contact
+*		 contact: the contact to add
+* Insert in the main list or in the waiting list the new contact depending if the main list is full or not
+ */
+ func (bucket *bucket) AddContact(contact Contact) {
 	//create a element variable
 	 element := bucket.findElementInList(contact, bucket.list)
 
@@ -45,6 +57,11 @@ func (bucket *bucket) AddContact(contact Contact) {
 	}
 }
 
+/** RemoveContact
+* PARAM: bucket: the bucket to remove a contact
+*		 contact: the contact to remove
+* Remove a contact from the main list bucket and add into it the first one of the waiting list
+ */
 func (bucket *bucket) RemoveContact(contact Contact){
 	element := bucket.findElementInList(contact, bucket.list)
 	if element == nil{
@@ -52,13 +69,20 @@ func (bucket *bucket) RemoveContact(contact Contact){
 	} else {
 		//Transfer the contact to the real bucket
 		bucket.list.Remove(element)
-		bucket.list.PushFront(bucket.cacheList.Front())
-		bucket.cacheList.Remove(bucket.cacheList.Front())
+		if bucket.cacheList.Len() > 0{
+			bucket.list.PushFront(bucket.cacheList.Front())
+			bucket.cacheList.Remove(bucket.cacheList.Front())
+		}
 	}
 }
 
-// GetContactAndCalcDistance is a method of bucket, params targer kademliaID and returns an Array of contacts
-func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
+
+/** GetContactAndCalcDistance
+* PARAM: bucket: the bucket to retrieve the contacts
+*		 target: the kademlia ID to which we have to compute the distance
+
+* OUTPUT: the list of contacts from the bucket with the distance parameter computed with the target contact
+ */func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
 	//create an array of contacts
 	var contacts []Contact
 
@@ -74,6 +98,13 @@ func (bucket *bucket) GetContactAndCalcDistance(target *KademliaID) []Contact {
 	return contacts
 }
 
+
+/** GetContactAndCalcDistance
+* PARAM: bucket: the bucket to check
+*		 contact: the contact to find in the list
+*		 ls: the list to retrieve the contact
+* OUTPUT: The element found in the list
+*/
 func(bucket *bucket) findElementInList(contact Contact, ls *list.List) *list.Element{
 	//create a element variable
 	var element *list.Element
@@ -96,6 +127,7 @@ func (bucket *bucket) Len() int {
 	return bucket.list.Len()
 }
 
+//Print all the contacts of one bucket
 func (bucket *bucket) Print() {
 	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
 		fmt.Println(elt.Value.(Contact))
