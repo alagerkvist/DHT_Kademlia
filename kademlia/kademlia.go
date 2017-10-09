@@ -9,24 +9,38 @@ import (
 	"time"
 )
 
+//Alpha = the number of workers while a lookup
 const alpha = 3
 
-
+//Main structure of a node.
 type Kademlia struct {
 	network *Network
 }
 
+/** NodeToCheck
+*	contact: contact to check
+*   alreadyChecked: already sent it a lookup
+ */
 type NodeToCheck struct{
 	contact	*Contact
 	alreadyChecked	bool 	//usefull if network < k
 }
 
-
+/** Request: used to communicate with the Lookup workers
+* contact: the contact to request
+* endWork: prevent the worker that it can stop to work
+*/
 type Request struct{
 	contact *Contact
 	endWork bool
 }
 
+/** Response: use by the Lookup workers to answer
+*  newContacts: the new contacts retrieved from the asked contact
+*  data: the data of the file (case of lookupValue
+* contactedContact *Contact: the contact whose the request has been performed
+* error: flag to signal error during the communication
+*/
 type Response struct{
 	newContacts *ContactCandidates
 	data *string
@@ -34,21 +48,31 @@ type Response struct{
 	error bool
 }
 
-//LookupContact is a method of Kademlia to locate some Node
-//Params target: it is the finded contact
+/** LookUpContact
+* PARAM: kademlia
+*		 targetID: the target id
+* OUTPUT: the k closest nodes from the target id
+*/
 func (kademlia *Kademlia) LookupContact(targetId *KademliaID) []NodeToCheck{
 	return kademlia.Lookup(targetId, true)
 }
 
-
-
+/** LookUpData
+* PARAM: fileManager
+*		 fileName: the file to retrieve from the network
+* Retrieve the file from the network if it is still there
+*/
 func (kademlia *Kademlia) LookupData(fileName string) {
 	targetID := NewKademliaID(fileName)
 	kademlia.Lookup(targetID, false)
 
 }
-//LookupContact is a method of KAdemlia to locate some Data
-//PArams hash: it is the finded data with the 160 bits hash
+
+/** LookUp
+* PARAM: targetId: the target
+		 isForNode: need to stop when receive file or not
+* OUTPUT: the k-closest nodes of the target
+*/
 func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToCheck{
 	channelToSendRequest := make(chan Request, alpha)
 	channelToReceive := make(chan Response)
@@ -164,13 +188,24 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 }
 
 
+/** SendEndWork
+* PARAM: channelToSendRequest: the channel to send request
+		 nb: the of thread to finish
+* Say to the worker that they can't stop waiting for request
+*/
 func sendEndWork(channelToSendRequest chan Request, nb int){
 	for i := 0 ; i < alpha ; i++{
 		channelToSendRequest <- Request{nil, true}
 	}
 }
 
-
+/** workerFindData
+* PARAM: network
+*		 targetId: the target ID
+		 responseChannel: channel to put answers
+		 isForNode: lookupValue or data
+* Perform tasks from the request channel
+*/
 func(network *Network) workerFindData(requestsChannel chan Request, targetId KademliaID, responseChannel chan Response, isForNode bool) {
 
 	for {
@@ -189,6 +224,11 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 }
 
 
+/** getNextContactToAsk
+* PARAM: network
+		 nodesToCheck: the nodes to check
+* Return the next contact to check
+*/
 func (network *Network) getNextContactToAsk(nodesToCheck []NodeToCheck) *Contact{
 	for i:=0 ; i < len(nodesToCheck) ; i++ {
 		if !nodesToCheck[i].alreadyChecked && !nodesToCheck[i].contact.ID.Equals(network.myRoutingTable.me.ID) {
@@ -217,16 +257,23 @@ func (kademlia *Kademlia) Store(fileName string) {
 
 		fileManager.CheckAndStore(idFile.String(), base64Data)
 		fileInfo := fileManager.filesStored[idFile.String()]
+		fmt.Println(fileInfo)
 		fileInfo.originalStore = true
 		fileInfo.immutable = true
+		//fmt.Println(fileManager.filesStored[idFile.String()])
 
 		contactToSend := kademlia.LookupContact(idFile)
-		//fmt.Println("File will be send to these contacts:")
+		fmt.Println("File will be send to these contacts:")
 		Print(contactToSend)
 		kademlia.network.SendStoreMessage(idFile.String(), base64Data, contactToSend)
 	}
 }
 
+/** PrintFile
+* PARAM: network
+		 fileName: the name of the file
+* Print the data of the file
+*/
 func (kademlia *Kademlia) PrintFile(fileName string) {
 	fileManager := kademlia.network.FileManager
 	completeFileName := filesDirectory + fileName
@@ -242,6 +289,12 @@ func (kademlia *Kademlia) PrintFile(fileName string) {
 	}
 }
 
+
+/** PrintFile
+* PARAM: network
+		 fileName: the name of the file
+* Print the data of the file
+*/
 func CheckFileValidity(id string, data []byte) bool{
 	hash := sha256.Sum256(data)
 	idFile := NewKademliaIDFromBytes(hash[:IDLength])
@@ -252,16 +305,26 @@ func CheckFileValidity(id string, data []byte) bool{
 	return true
 }
 
+
+/** Print the nodes to check
+*/
 func Print(nodesToCheck []NodeToCheck) {
 	for i:=0 ; i < len(nodesToCheck) ; i++{
 		fmt.Println(nodesToCheck[i].contact.String() + "  alrdyChecked: " + strconv.FormatBool(nodesToCheck[i].alreadyChecked))
 	}
 }
 
+
+/** return the network
+*/
 func (kademlia *Kademlia) GetNetwork() *Network{
 	return kademlia.network
 }
 
+/** GenerateNewFile
+* PARAM: kademlia
+* Create a random file
+*/
 func (kademlia *Kademlia) GenerateNewFile() string{
 	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	newData := RandStringRunes(200, letterRunes)
@@ -284,10 +347,10 @@ func RandStringRunes(n int, letterRunes []rune) string {
 	return string(b)
 }
 
-/* PARAM: kademlia
-*		 fileName: the name of the file
-*		 data: the data into the file
-* If the file does not exist, create it and add it the fileManager structure
+
+/** CheckFiles
+*   PARAM: kademlia
+*	Check the files for refreshing and expiration time
 */
 func (kademlia *Kademlia) CheckFiles(){
 

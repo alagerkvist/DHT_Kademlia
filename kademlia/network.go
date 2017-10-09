@@ -19,7 +19,10 @@ type Network struct {
 
 const packetSize = 4096
 
-
+/** Listen
+*	PARAM: network
+* Listen for incoming requests
+ */
 func (network *Network) Listen() {
 
 	fmt.Println("Listen " + network.myRoutingTable.me.String())
@@ -46,7 +49,7 @@ func (network *Network) Listen() {
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
-			log.Fatal("unmarshaling error: ", err)
+			log.Fatal("49 unmarshaling error: ", err)
 		}
 		//new contact and add it to bucket
 
@@ -92,6 +95,13 @@ func (network *Network) Listen() {
 
 }
 
+/** processPing
+*	PARAM: network
+			protocolPackage: the message receive
+			remoteaddr: udp addres
+			ser: udp connection
+* Process the ping request
+ */
 func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	//fmt.Print("Ping processor:   ")
 	//fmt.Print(remoteaddr)
@@ -118,6 +128,13 @@ func (network *Network) processPing(protocolPackage *ProtocolPackage, remoteaddr
 
 }
 
+/** processFindContactMessage
+*	PARAM: network
+			protocolPackage: the message receive
+			remoteaddr: udp addres
+			ser: udp connection
+* Process the find contact request
+ */
 func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn)  {
 	respChan := make(chan []Contact)
 	network.myRoutingTable.createTask(getClosest, respChan, &Contact{NewKademliaIDFromBytes(protocolPackage.FindID), "", nil})
@@ -154,6 +171,13 @@ func (network *Network) processFindConctactMessage(protocolPackage *ProtocolPack
 	}
 }
 
+/** processStoreMessage
+*	PARAM: network
+			protocolPackage: the message receive
+			remoteaddr: udp addres
+			ser: udp connection
+* Process the store message
+*/
 func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id *string = protocolPackage.StoredeID
 	var base64File *string = protocolPackage.File
@@ -165,6 +189,14 @@ func (network *Network) processStoreMessage(protocolPackage *ProtocolPackage, re
 	}
 }
 
+
+/** processFindValue
+*	PARAM: network
+			protocolPackage: the message receive
+			remoteaddr: udp addres
+			ser: udp connection
+* Process the find value request
+ */
 func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remoteaddr *net.UDPAddr, ser *net.UDPConn){
 	var id string = NewKademliaIDFromBytes(protocolPackage.FindValue).String()
 
@@ -198,6 +230,14 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
 	}
 }
 
+
+/** Sender
+*	PARAM: network
+			marshaledObject: the message to send
+			address: udp addres to send
+			answerWanted: if answer is expected
+* Process the ping request
+ */
 func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
 	//fmt.Println("sender", address)
@@ -249,7 +289,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			}
 
 			if err != nil {
-				log.Fatal("unmarshaling error: ", err)
+				log.Fatal("252 unmarshaling error: ", err)
 			}
 
 			conn.Close()
@@ -264,6 +304,12 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 	return nil
 }
 
+
+/** sendFindDataValue
+*	PARAM: network
+			id: id of the file to find
+			contact: the contact to send the message
+ */
 func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Response{
 
 	result := network.marshalFindValue(id, contact)
@@ -291,6 +337,13 @@ func (network *Network) SendFindDataValue(id KademliaID, contact *Contact) Respo
 	return Response{nil, result.File, contact, false}
 }
 
+
+/**marshalFindValue
+*	PARAM: network
+			id: id of the file to find
+			contact: the contact to send the message
+* Prepare the request to send
+ */
 func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*ProtocolPackage) {
 	typeOfMessage := ProtocolPackage_FINDVALUE
 
@@ -309,10 +362,22 @@ func (network *Network) marshalFindValue(id KademliaID, contact *Contact) (*Prot
 	return network.Sender(data, contact.Address, true)
 }
 
+
+/** SendPingMessage
+*	PARAM: network
+			contact: the contact to send the message
+*  Prepare the request to send
+ */
 func (network *Network) SendPingMessage(contact *Contact) {
 	network.marshalPing(contact)
 }
 
+
+/** marshalPing
+*	PARAM: network
+			contact: the contact to send the message
+* Prepare packet for ping
+ */
 func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	fmt.Println("marshallping")
 	typeOfMessage := ProtocolPackage_PING
@@ -332,6 +397,12 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 	return network.Sender(data, contacts.Address, true)
 }
 
+
+/** SendFindContactMessage
+*	PARAM: network
+			findThisID: id of the contact to find
+			contact: the contact to send the message
+ */
 func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *Contact) Response{
 	result := network.marshalFindContact(findThisID, contact)
 
@@ -354,6 +425,12 @@ func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *
 	return Response{newCandidates, nil, nil, false}
 }
 
+
+/** marshalFindContact
+*	PARAM: network
+			findThisID: id of the conttact to find
+			contact: the contact to send the message
+ */
 func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Contact) (*ProtocolPackage){
 
 	// fmt.Println("Marshal: target " + findThisID.String() + "  ask to " + contact.String() + "\n")
@@ -374,6 +451,13 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
 	return network.Sender(data, contact.Address, true)
 }
 
+
+/** SendStoreMessage
+*	PARAM: network
+			fileName: file to store
+			id: id of the file to find
+			contact: the contact to send the message
+ */
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
 	fmt.Println("==================== SEND STORE   ==================")
 	for i := 0 ; i < len(contactsToSend) ; i++{
@@ -382,6 +466,13 @@ func (network *Network) SendStoreMessage(fileName string, data string, contactsT
 
 }
 
+
+/** marshalStore
+*	PARAM: network
+			fileName: id of the file to send
+			data: the data to send
+			contact: the contact to send
+ */
 func (network *Network) marshalStore(fileName string, data string, contact *Contact) (*ProtocolPackage){
 
 	typeOfMessage := ProtocolPackage_STORE
@@ -403,10 +494,19 @@ func (network *Network) marshalStore(fileName string, data string, contact *Cont
 	return network.Sender(marshalData, contact.Address, false)
 }
 
+
+/** GetMyRoutingTable
+*	return the routing table of network
+ */
 func (network *Network) GetMyRoutingTable() *RoutingTable{
 	return network.myRoutingTable
 }
 
+
+/** SetExpirationTime
+*	PARAM: network
+			fileName: filename to put the expiration time
+ */
 func (network *Network) SetExpirationTime(fileName string){
 	fileInfo := network.FileManager.filesStored[fileName]
 	responseChannel := make(chan []Contact)
@@ -425,6 +525,10 @@ func (network *Network) SetExpirationTime(fileName string){
 
 }
 
+
+/** PrintNetwork
+* Print the network parameter
+ */
 func (network *Network) PrintNetwork () {
 	fmt.Println(network.myRoutingTable.me.ID)
 	//fmt.Println(network.myContact.distance)
@@ -432,9 +536,3 @@ func (network *Network) PrintNetwork () {
 	return
 }
 
-func (network *Network) TestKademliaPing(contact *Contact) {
-	for{
-		time.Sleep(2 * time.Second)
-		go network.SendPingMessage(contact)
-	}
-}

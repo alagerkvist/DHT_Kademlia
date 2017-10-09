@@ -33,7 +33,7 @@ func main() {
 		go kademliaNodes[i].GetNetwork().Listen()
 
 	}
-
+	kademliaNodes[0].Store("mainAppl.go")
 	time.Sleep(120 * time.Second)
 	//kademliaNodes[0].Store("mainAppl.go")
 	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()

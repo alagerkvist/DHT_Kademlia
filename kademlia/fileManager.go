@@ -71,6 +71,11 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 			fmt.Println(err)
 		}
 		defer f.Close()
+	} else{
+		if fileManager.filesStored[fileName] == nil{
+			file := FileInfo{fileName, time.Now().Local(), time.Now().Local(), time.Now().Local(), 24.0, false, false}
+			fileManager.filesStored[fileName] = &file
+		}
 	}
 }
 
