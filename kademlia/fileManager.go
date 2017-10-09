@@ -9,11 +9,26 @@ import (
 	"log"
 )
 
+/** FileManager
+* filesStored: represent all the files stored in context of Kademlia
+*				string: file name
+*				FileInfo: see below
+*/
 type FileManager struct{
-	encoder *base64.Encoding
 	filesStored map[string]*FileInfo
 }
 
+
+/** FileInfo: all the information about a file
+* fileName: the file name
+* lastOriginalRefreshedStored: In case of the node is the node that store this file, this time remember the last refresh
+								that has to be perform each 24h
+* lastTimeRefreshed: Time of the last received Store for this file
+* initialStore: The time that this file has been stored the first time
+* expirationTime: The living time of this file on this node
+* originalStore: is this node that perform the first store for this file ?
+* immutable: take or not into account the expiration time
+*/
 type FileInfo struct {
 	fileName string
 	lastOriginalRefreshedStored time.Time
@@ -24,9 +39,15 @@ type FileInfo struct {
 	immutable bool
 }
 
+//Where all the files will be stored
 const filesDirectory = "kademlia/Files/"
 
-
+/** checkAndStore
+* PARAM: fileManager
+*		 fileName: the name of the file
+*		 data: the data into the file
+* If the file does not exist, create it and add it the fileManager structure
+*/
 func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 	_, err := ioutil.ReadFile(filesDirectory + fileName)
 
@@ -54,11 +75,23 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 }
 
 
+/** checkAndStore
+* PARAM: fileManager
+*		 fileName: the name of the file
+*		 data: the data into the file
+* If the file does not exist, create it and add it the fileManager structure
+*/
 func (fileManager *FileManager) updateTime(fileName string){
 	fileInfo := fileManager.filesStored[fileName]
 	fileInfo.lastTimeRefreshed = time.Now().Local()
 }
 
+/** checkIfFileExist
+* PARAM: fileManager
+*		 fileName: file to check if it exists
+*
+* OUTPUT: if the file exist or not
+*/
 func (f *FileManager) checkIfFileExist(fileName string) bool{
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		return false
@@ -66,41 +99,31 @@ func (f *FileManager) checkIfFileExist(fileName string) bool{
 	return true
 }
 
+/** readData
+* PARAM: fileManager
+*		 fileName: the name to get the data
+* OUTPUT: the data of the file in bytes
+*/
 func (f *FileManager) readData(fileName string) []byte{
 	data, _ := ioutil.ReadFile(fileName)
 	return data
 }
 
+
+/** RemoveFile
+* PARAM: fileManager
+*		 fileName: the name of the file to remove
+*		 data: the data into the file
+* Remove the file
+*/
 func (fileManager *FileManager) RemoveFile(filename string){
 	delete(fileManager.filesStored, filename)
 	os.Remove(filesDirectory + filename)
 }
 
-
-func (kademlia *Kademlia) CheckFiles(){
-
-	for{
-		time.Sleep(1 * time.Minute)
-		fmt.Println("Check for files")
-		for k, file := range kademlia.network.FileManager.filesStored {
-
-				//Refreshing each file that has not been refresh from one hour
-			if time.Since(file.lastTimeRefreshed).Hours() >= 1 {
-				kademlia.Store(k)
-
-				//Refreshing files owned, each 24h
-			} else if file.originalStore && time.Since(file.lastOriginalRefreshedStored).Hours() >= 24{
-				file.lastOriginalRefreshedStored = time.Now().Local()
-				kademlia.Store(k)
-
-				//Delete expirated files
-			} else if !file.immutable && time.Since(file.initialStore).Hours() >= file.expirationTime{
-				kademlia.network.FileManager.RemoveFile(k)
-			}
-		}
-	}
-}
-
+/** ListFiles
+* List all the files in this node
+*/
 func ListFiles(){
 	files, err := ioutil.ReadDir("./kademlia/Files")
 	if err != nil {
@@ -112,7 +135,12 @@ func ListFiles(){
 	}
 }
 
-func (fileManager *FileManager) pinFile(fileName string, pin bool){
+/** PinFile
+* PARAM: fileManager
+*		 fileName: the name of the file to pin/unpin
+*		 pin: true = set to immutable, false = we can remove it
+*/
+func (fileManager *FileManager) PinFile(fileName string, pin bool){
 	file, ok := fileManager.filesStored[fileName]
 	if !ok {
 		fmt.Println("This file does not exist")

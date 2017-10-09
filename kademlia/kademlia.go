@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"math/rand"
+	"time"
 )
 
 const alpha = 3
@@ -281,4 +282,33 @@ func RandStringRunes(n int, letterRunes []rune) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+/* PARAM: kademlia
+*		 fileName: the name of the file
+*		 data: the data into the file
+* If the file does not exist, create it and add it the fileManager structure
+*/
+func (kademlia *Kademlia) CheckFiles(){
+
+	for{
+		time.Sleep(1 * time.Minute)
+		fmt.Println("Check for files")
+		for k, file := range kademlia.network.FileManager.filesStored {
+
+			//Refreshing each file that has not been refresh from one hour
+			if time.Since(file.lastTimeRefreshed).Hours() >= 1 {
+				kademlia.Store(k)
+
+				//Refreshing files owned, each 24h
+			} else if file.originalStore && time.Since(file.lastOriginalRefreshedStored).Hours() >= 24{
+				file.lastOriginalRefreshedStored = time.Now().Local()
+				kademlia.Store(k)
+
+				//Delete expirated files
+			} else if !file.immutable && time.Since(file.initialStore).Hours() >= file.expirationTime{
+				kademlia.network.FileManager.RemoveFile(k)
+			}
+		}
+	}
 }
