@@ -136,13 +136,9 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 		return
 	}
 
-
-	newKademliaID := strconv.FormatInt(int64(0), 16) + "00000000000000000000000000000000000000000"
-	//newKademliaID := words[2]
-	newContact := kademlia.NewContact(kademlia.NewKademliaID(newKademliaID), "10.5.0." + strconv.Itoa(21) + ":" + strconv.Itoa(8080))
-	kadem.GetNetwork().SendPingMessage(&newContact)
-
-	fmt.Println("sending ping to ", words[2])
+	contact := kadem.GetNetwork().GetMyRoutingTable().FindClosestContacts(kademlia.NewKademliaID(words[2]),1, false)[0]
+	kadem.GetNetwork().SendPingMessage(&contact)
+	fmt.Println("sending ping to ", contact)
 	fmt.Println("***********")
 }
 
