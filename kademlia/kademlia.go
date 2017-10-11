@@ -375,3 +375,8 @@ func (kademlia *Kademlia) CheckFiles(){
 		}
 	}
 }
+
+func (kademlia *Kademlia) StartRoutingTableListener() {
+	kademlia.network.myRoutingTable.channelTasks = make(chan Task, nb_task_managed)
+	go kademlia.runWorker(kademlia.network.myRoutingTable.channelTasks)
+}

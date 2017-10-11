@@ -23,13 +23,13 @@ func main() {
 
 
 	kademlia.AssingNetworkKademliaPrev(networks, kademliaNodes)
-	go kademliaNodes[0].GetNetwork().GetMyRoutingTable().StartRoutingTableListener()
+	go kademliaNodes[0].StartRoutingTableListener()
 	go kademliaNodes[0].StartRefreshManaging()
 	go kademliaNodes[0].CheckFiles()
 
 
 	for i:=1 ; i < numberNodes ; i++{
-		go kademliaNodes[i].GetNetwork().GetMyRoutingTable().StartRoutingTableListener()
+		go kademliaNodes[i].StartRoutingTableListener()
 		go kademliaNodes[i].GetNetwork().Listen()
 
 	}

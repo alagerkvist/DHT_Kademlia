@@ -31,9 +31,10 @@ func newBucket() *bucket {
 /** AddContact
 * PARAM: bucket: the bucket to add a contact
 *		 contact: the contact to add
+* OUTPUT: if it is a new contact or nor
 * Insert in the main list or in the waiting list the new contact depending if the main list is full or not
  */
- func (bucket *bucket) AddContact(contact Contact) {
+ func (bucket *bucket) AddContact(contact Contact) bool{
 	//create a element variable
 	 element := bucket.findElementInList(contact, bucket.list)
 
@@ -46,6 +47,7 @@ func newBucket() *bucket {
 			element = bucket.findElementInList(contact, bucket.cacheList)
 			if element == nil{
 				bucket.cacheList.PushFront(contact)
+				return true
 			} else{
 				bucket.cacheList.MoveToFront(element)
 			}
@@ -55,6 +57,7 @@ func newBucket() *bucket {
 		// is the element exists we move the element to the front
 		bucket.list.MoveToFront(element)
 	}
+	return false
 }
 
 /** RemoveContact

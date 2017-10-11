@@ -23,10 +23,10 @@ func NewRoutingTable(me Contact) *RoutingTable {
 	return routingTable
 }
 
-func (routingTable *RoutingTable) AddContact(contact Contact) {
+func (routingTable *RoutingTable) AddContact(contact Contact) bool{
 	bucketIndex := routingTable.getBucketIndex(contact.ID)
 	bucket := routingTable.buckets[bucketIndex]
-	bucket.AddContact(contact)
+	return bucket.AddContact(contact)
 }
 
 func (routingTable *RoutingTable) FindClosestContacts(target *KademliaID, count int, isForLookup bool) []Contact {
@@ -90,11 +90,6 @@ func (routingTable *RoutingTable) GetMyContact() *Contact{
 	return &routingTable.me
 }
 
-
-func (routingTable *RoutingTable) StartRoutingTableListener() {
-	routingTable.channelTasks = make(chan Task, nb_task_managed)
-	go routingTable.runWorker(routingTable.channelTasks)
-}
 
 /**
 * createTask:

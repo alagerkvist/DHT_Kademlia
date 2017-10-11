@@ -7,7 +7,6 @@ import (
 	"log"
 	"strings"
 	"strconv"
-	"time"
 	"encoding/base64"
 	"math"
 )
@@ -517,7 +516,7 @@ func (network *Network) SetExpirationTime(fileName string){
 	me.CalcDistance(fileID)
 
 	for i:=0 ; i < len(closestContacts) ; i++{
-		if i > 10 || me.Less(&closestContacts[i]){
+		if i > 10 || me.Less(&closestContacts[i]) || me.ID.Equals(closestContacts[i].ID){
 				fileInfo.expirationTime = 24 * math.Exp(-(float64(i)))
 				break
 		}

@@ -2,6 +2,7 @@ package kademlia
 
 import (
 "fmt"
+	"encoding/base64"
 )
 
 /** Task: structure that define a task to perform for this go routine
@@ -23,7 +24,7 @@ const getClosest = 3
 *		 taskChannel: the channel to receive the tasks
 * Perform the tasks one by one
 */
-func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
+func (kademlia *Kademlia) runWorker(taskChannel <-chan Task){
 
 	for {
 		task := <-taskChannel
@@ -32,13 +33,24 @@ func (routingTable *RoutingTable) runWorker(taskChannel <-chan Task){
 
 		switch task.idType {
 		case lookUpContact:
-			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, true)
+			task.responseChan <- kademlia.network.myRoutingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, true)
 		case getClosest:
-			task.responseChan <- routingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, false)
+			task.responseChan <-  kademlia.network.myRoutingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, false)
 		case addContact:
-			routingTable.AddContact(*task.contactRequested)
+			if kademlia.network.myRoutingTable.AddContact(*task.contactRequested){
+				me := kademlia.network.myRoutingTable.me
+				for k := range kademlia.network.FileManager.filesStored {
+					closestNode := kademlia.network.myRoutingTable.FindClosestContacts(NewKademliaID(k), 1, false)
+					me.CalcDistance(NewKademliaID(k))
+					if me.Less(&closestNode[0]){
+						data := kademlia.network.FileManager.readData(k)
+						base64Data := base64.StdEncoding.EncodeToString(data[:])
+						kademlia.network.marshalStore(k, base64Data, task.contactRequested)
+					}
+				}
+			}
 		case removeContact:
-			routingTable.RemoveContact(*task.contactRequested)
+			kademlia.network.myRoutingTable.RemoveContact(*task.contactRequested)
 
 		default:
 			fmt.Printf("Error in task request")
