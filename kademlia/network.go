@@ -46,7 +46,7 @@ func (network *Network) Listen() {
 		p := make([]byte, packetSize)
 
 		n,remoteaddr,err := ser.ReadFromUDP(p)
-		fmt.Println(p)
+		//fmt.Println(p)
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
