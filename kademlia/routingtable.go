@@ -107,7 +107,7 @@ func (routingTable *RoutingTable) createTask(idType int, responseChannel chan []
 func (routingTable *RoutingTable) Print(){
 	for i:=0 ; i < IDLength * 8 ; i++ {
 		if routingTable.buckets[i].list.Len() > 0{
-			fmt.Println("Bucket %d:", i)
+			fmt.Println("Bucket %d:", 160 - i)
 			routingTable.buckets[i].Print()
 			fmt.Println()
 		}

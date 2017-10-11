@@ -32,8 +32,6 @@ func (network *Network) Listen() {
 	ipAndPort := strings.Split(network.myRoutingTable.me.Address, ":")
 	port, err := strconv.Atoi(ipAndPort[1])
 
-	p := make([]byte, packetSize)
-
 	addr := net.UDPAddr{
 		Port: port,
 		IP: net.ParseIP(ipAndPort[0]),
@@ -45,9 +43,10 @@ func (network *Network) Listen() {
 		return
 	}
 	for {
+		p := make([]byte, packetSize)
 
 		n,remoteaddr,err := ser.ReadFromUDP(p)
-
+		fmt.Println(p)
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
@@ -256,7 +255,6 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 		//fmt.Printf("126 Some error %v", err)
 		return nil
 	}
-	fmt.Println(marshaledObject)
 	//fmt.Fprintf(conn, string(marshaledObject))
 	conn.Write(marshaledObject)
 	//fmt.Println("watting answer")

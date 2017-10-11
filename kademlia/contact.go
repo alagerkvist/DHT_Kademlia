@@ -46,6 +46,7 @@ func (contact *Contact) String() string {
 	return fmt.Sprintf(`contact("%s", "%s")`, contact.ID, contact.Address)
 }
 
+
 //Array of the candidates of a Contact
 type ContactCandidates struct {
 	contacts []Contact
@@ -79,4 +80,9 @@ func (candidates *ContactCandidates) Swap(i, j int) {
 // Less is a method of ContactCandidates that return a boolean using the Contact.less method that uses the less mehod of KAdemliaId.
 func (candidates *ContactCandidates) Less(i, j int) bool {
 	return candidates.contacts[i].Less(&candidates.contacts[j])
+}
+
+func (contact *Contact) PrintDistance(){
+	fmt.Println(contact)
+	fmt.Println(contact.distance)
 }

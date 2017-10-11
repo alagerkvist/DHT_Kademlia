@@ -118,7 +118,7 @@ func CreateWantedNetworkPrev(numberNodes int) []Network{
 	//creation of the ids
 	for i := 0 ; i < numberNodes ; i++{
 		hexad := fmt.Sprintf("%x", i)
-		ids[i] = "1111111" + hexad + "00000000000000000000000000000000"
+		ids[i] = "000000000000000000000000000000000000000" + hexad
 		number := 1234 + i
 		var newContact = NewContact(NewKademliaID(ids[i]), "127.0.0.1:" + strconv.Itoa(number))
 		newNetworks[i].myRoutingTable = NewRoutingTable(newContact)
@@ -146,6 +146,8 @@ func MakeMoreFriendsPrev(nodeToMakeFriends []Network, newFriends int){
 			for random == j{
 				random = rand.Intn(len(nodeToMakeFriends))
 			}
+			contact := nodeToMakeFriends[random]
+			contact.myRoutingTable.me.CalcDistance(nodeToMakeFriends[j].myRoutingTable.me.ID)
 			nodeToMakeFriends[j].myRoutingTable.AddContact(nodeToMakeFriends[random].myRoutingTable.me)
 		}
 	}

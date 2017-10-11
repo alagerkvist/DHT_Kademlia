@@ -133,7 +133,9 @@ func (bucket *bucket) Len() int {
 //Print all the contacts of one bucket
 func (bucket *bucket) Print() {
 	for elt := bucket.list.Front(); elt != nil; elt = elt.Next() {
-		fmt.Println(elt.Value.(Contact))
+		//fmt.Println(elt.Value.(Contact))
+		contact := elt.Value.(Contact)
+		contact.PrintDistance()
 	}
 
 }
