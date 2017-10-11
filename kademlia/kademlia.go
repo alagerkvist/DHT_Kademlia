@@ -97,6 +97,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 	for {
 		newResponse := <- channelToReceive
+
 		if newResponse.error{
 			fmt.Println("Unreachable node")
 			kademlia.network.myRoutingTable.createTask(removeContact, nil, newResponse.contactedContact)
@@ -169,13 +170,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 				break
 			}
 		} else {
-			if countEndThread > 0{
-				for ; countEndThread > 0 && nextContactToCheck != nil ; countEndThread--{
-					nextContactToCheck = kademlia.network.getNextContactToAsk(nodesToCheck)
-				}
-			} else{
-				channelToSendRequest <- Request{nextContactToCheck, false}
-			}
+			channelToSendRequest <- Request{nextContactToCheck, false}
 		}
 	}
 
@@ -253,7 +248,7 @@ func (kademlia *Kademlia) Store(fileName string) {
 		fileInfo.originalStore = true
 		fileInfo.immutable = true
 		//fmt.Println(fileManager.filesStored[idFile.String()])
-
+		fmt.Println("Perform LookupContact")
 		contactToSend := kademlia.LookupContact(idFile)
 		fmt.Println("File will be send to these contacts:")
 		Print(contactToSend)

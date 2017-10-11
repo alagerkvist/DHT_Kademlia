@@ -2,7 +2,6 @@ package kademlia
 
 import (
 "fmt"
-	"encoding/base64"
 )
 
 /** Task: structure that define a task to perform for this go routine
@@ -36,8 +35,8 @@ func (kademlia *Kademlia) runWorker(taskChannel <-chan Task){
 			task.responseChan <-  kademlia.network.myRoutingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, false)
 		case addContact:
 			if kademlia.network.myRoutingTable.AddContact(*task.contactRequested){
-				me := kademlia.network.myRoutingTable.me
-				for k := range kademlia.network.FileManager.filesStored {
+				//me := kademlia.network.myRoutingTable.me
+				/*for k := range kademlia.network.FileManager.filesStored {
 					closestNode := kademlia.network.myRoutingTable.FindClosestContacts(NewKademliaID(k), 1, false)
 					me.CalcDistance(NewKademliaID(k))
 					if me.Less(&closestNode[0]){
@@ -45,7 +44,7 @@ func (kademlia *Kademlia) runWorker(taskChannel <-chan Task){
 						base64Data := base64.StdEncoding.EncodeToString(data[:])
 						kademlia.network.marshalStore(k, base64Data, task.contactRequested)
 					}
-				}
+				}*/
 			}
 		case removeContact:
 			kademlia.network.myRoutingTable.RemoveContact(*task.contactRequested)

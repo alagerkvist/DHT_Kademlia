@@ -469,7 +469,7 @@ func (network *Network) SendStoreMessage(fileName string, data string, contactsT
 	fmt.Println("==================== SEND STORE   ==================")
 	fmt.Println(len(contactsToSend))
 	for i := 0 ; i < len(contactsToSend) ; i++{
-		go network.marshalStore(fileName, data, contactsToSend[i].contact)
+		network.marshalStore(fileName, data, contactsToSend[i].contact)
 	}
 
 }

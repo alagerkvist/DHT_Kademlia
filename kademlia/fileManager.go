@@ -88,7 +88,9 @@ func (fileManager *FileManager) CheckAndStore(fileName string, data string) {
 */
 func (fileManager *FileManager) updateTime(fileName string){
 	fileInfo := fileManager.filesStored[fileName]
-	fileInfo.lastTimeRefreshed = time.Now().Local()
+	if fileInfo != nil{
+		fileInfo.lastTimeRefreshed = time.Now().Local()
+	}
 }
 
 /** checkIfFileExist

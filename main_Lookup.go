@@ -19,8 +19,8 @@ func main() {
 
 	kademlia.AssingNetworkKademliaPrev(networks, kademliaNodes)
 	go kademliaNodes[0].StartRoutingTableListener()
-	go kademliaNodes[0].StartRefreshManaging()
-	go kademliaNodes[0].CheckFiles()
+	//go kademliaNodes[0].StartRefreshManaging()
+	//go kademliaNodes[0].CheckFiles()
 
 
 	for i:=1 ; i < numberNodes ; i++{
