@@ -3,17 +3,12 @@ package main
 import (
 	"./kademlia"
 	"time"
-
-	"fmt"
 )
 
 func main() {
 
 
 	numberNodes := 16
-
-	//Creation of the Kademlia nodes
-	fmt.Println(kademlia.NewRandomKademliaID())
 
 	kademliaNodes := make([]kademlia.Kademlia, numberNodes)
 	networks  := kademlia.CreateWantedNetworkPrev(numberNodes)

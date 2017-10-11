@@ -91,9 +91,6 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 	for i := 0 ; i < alpha ; i++ {
 		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive, isForNode)
-
-		fmt.Println("sender")
-		Print(nodesToCheck)
 		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
 		nodesToCheck[i].alreadyChecked = true
 	}
@@ -167,9 +164,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 				if(!isForNode) {
 					fmt.Println("Impossible to find the file in the network")
 				}
-				Print(nodesToCheck)
 
-				//Print(nodesToCheck)
 				sendEndWork(channelToSendRequest, alpha)
 				break
 			}
@@ -213,8 +208,8 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 		if(request.endWork){
 			break
 		}
-		fmt.Print("request: ")
-		fmt.Println(request.contact)
+		//fmt.Print("request: ")
+		//fmt.Println(request.contact)
 		if !isForNode {
 			responseChannel <- network.SendFindDataValue(targetId, request.contact)
 		} else {

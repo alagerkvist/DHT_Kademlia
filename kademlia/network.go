@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"encoding/base64"
 	"math"
+	"time"
 )
 
 type Network struct {
@@ -16,7 +17,7 @@ type Network struct {
 	FileManager *FileManager
 }
 
-const packetSize = 4096
+const packetSize = 8096
 
 const PRINT_PONG = true
 
