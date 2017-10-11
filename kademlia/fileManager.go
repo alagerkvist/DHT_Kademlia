@@ -155,3 +155,14 @@ func (fileManager *FileManager) PinFile(fileName string, pin bool){
 		file.immutable = pin
 	}
 }
+
+
+func (fileInfo *FileInfo) Print(){
+	fmt.Println("file name:" + fileInfo.fileName)
+	fmt.Println("last time from original store refresh ", fileInfo.lastOriginalRefreshedStored)
+	fmt.Println("last time received store for it ", fileInfo.lastTimeRefreshed)
+	fmt.Println("initial store ", fileInfo.initialStore)
+	fmt.Println("expiration time", fileInfo.expirationTime)
+	fmt.Println("Initial store here ?", fileInfo.originalStore)
+	fmt.Println("Is it immutabla ?", fileInfo.immutable)
+}

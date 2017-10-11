@@ -39,7 +39,7 @@ type Request struct{
 *  newContacts: the new contacts retrieved from the asked contact
 *  data: the data of the file (case of lookupValue
 * contactedContact *Contact: the contact whose the request has been performed
-* error: flag to signal error during the communication
+* error: flag to signal fror during the communication
 */
 type Response struct{
 	newContacts *ContactCandidates
@@ -277,6 +277,10 @@ func (kademlia *Kademlia) PrintFile(fileName string) {
 	if !fileManager.checkIfFileExist(completeFileName) {
 		fmt.Println("File not found")
 	} else {
+		file := fileManager.filesStored[fileName]
+		if file != nil{
+			file.Print()
+		}
 		data := fileManager.readData(completeFileName)
 		dataString := string(data[:])
 

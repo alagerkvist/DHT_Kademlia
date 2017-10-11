@@ -175,7 +175,10 @@ func processCommandFile(words []string, kadem *kademlia.Kademlia){
 		kadem.PrintFile(takeName(words))
 		break
 	case "pin":
-		//fmt.Println("$ file pin true/false")
+		kadem.GetNetwork().FileManager.PinFile(takeName(words), true)
+		break
+	case "unpin":
+		kadem.GetNetwork().FileManager.PinFile(takeName(words), false)
 		break
 	case "list":
 		kademlia.ListFiles()
