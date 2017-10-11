@@ -51,7 +51,7 @@ func (network *Network) Listen() {
 		unMarshalMessage := &ProtocolPackage{}
 		err = proto.Unmarshal(p[:n], unMarshalMessage)
 		if err != nil {
-			log.Fatal("unmarshaling error: ", err)
+			log.Fatal("54: unmarshaling error: ", err)
 		}
 		//new contact and add it to bucket
 
@@ -295,7 +295,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			}
 
 			if err != nil {
-				log.Fatal("unmarshaling error: ", err)
+				log.Fatal("298: unmarshaling error: ", err)
 			}
 
 			conn.Close()
@@ -466,6 +466,7 @@ func (network *Network) marshalFindContact(findThisID *KademliaID, contact *Cont
  */
 func (network *Network) SendStoreMessage(fileName string, data string, contactsToSend []NodeToCheck){
 	fmt.Println("==================== SEND STORE   ==================")
+	fmt.Println(len(contactsToSend))
 	for i := 0 ; i < len(contactsToSend) ; i++{
 		go network.marshalStore(fileName, data, contactsToSend[i].contact)
 	}

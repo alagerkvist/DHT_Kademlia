@@ -29,8 +29,6 @@ func (kademlia *Kademlia) runWorker(taskChannel <-chan Task){
 	for {
 		task := <-taskChannel
 
-		//task.Print()
-
 		switch task.idType {
 		case lookUpContact:
 			task.responseChan <- kademlia.network.myRoutingTable.FindClosestContacts(task.contactRequested.ID, bucketSize, true)

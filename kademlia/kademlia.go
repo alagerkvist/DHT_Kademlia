@@ -245,14 +245,11 @@ func (kademlia *Kademlia) Store(fileName string) {
 	}else {
 		data := fileManager.readData(fileName)
 		base64Data := base64.StdEncoding.EncodeToString(data[:])
-
 		//Generate a hash for the name of the file
 		hash := sha256.Sum256(data)
 		idFile := NewKademliaIDFromBytes(hash[:IDLength])
-
 		fileManager.CheckAndStore(idFile.String(), base64Data)
 		fileInfo := fileManager.filesStored[idFile.String()]
-		fmt.Println(fileInfo)
 		fileInfo.originalStore = true
 		fileInfo.immutable = true
 		//fmt.Println(fileManager.filesStored[idFile.String()])
