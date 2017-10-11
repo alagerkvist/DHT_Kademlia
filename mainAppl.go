@@ -30,8 +30,8 @@ func main() {
 	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
 	kademlia.AssingNetworkKademlia(network, kadem)
 
-	go network.Listen()
-	go network.GetMyRoutingTable().StartRoutingTableListener()
+	go kadem.GetNetwork().Listen()
+	go kadem.StartRoutingTableListener()
 	go kadem.StartRefreshManaging()
 
 	//kadem.GetNetwork().GetMyRoutingTable().Print()

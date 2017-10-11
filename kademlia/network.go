@@ -256,6 +256,7 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 		//fmt.Printf("126 Some error %v", err)
 		return nil
 	}
+	fmt.Println(marshaledObject)
 	//fmt.Fprintf(conn, string(marshaledObject))
 	conn.Write(marshaledObject)
 	//fmt.Println("watting answer")

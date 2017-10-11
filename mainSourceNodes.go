@@ -30,8 +30,9 @@ func main() {
 	kademlia.MakeMoreFriends(network, id, numberSrcNodes, prefixIp, port)
 	var kadem *kademlia.Kademlia = &kademlia.Kademlia{}
 	kademlia.AssingNetworkKademlia(network, kadem)
-	go network.Listen()
-	go network.GetMyRoutingTable().StartRoutingTableListener()
+	go kadem.GetNetwork().Listen()
+	go kadem.StartRoutingTableListener()
+	go kadem.CheckFiles()
 
 	//kadem.GetNetwork().GetMyRoutingTable().Print()
 
