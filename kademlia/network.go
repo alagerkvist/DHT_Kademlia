@@ -424,7 +424,7 @@ func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *
 	for i := 0 ; i < len(result.ContactsKNearest) ; i++{
 		//Create the new contact
 		newContacts[i] = NewContact(NewKademliaIDFromBytes(result.ContactsKNearest[i].ContactID), *result.ContactsKNearest[i].Address)
-		newContacts[i].distance = NewKademliaIDFromBytes(result.ContactsKNearest[i].Distance)
+		newContacts[i].CalcDistance(findThisID)
 	}
 	//fmt.Println("---\n")
 
