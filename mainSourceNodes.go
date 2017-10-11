@@ -12,6 +12,11 @@ import (
 	"os/exec"
 )
 
+
+const PRINT_FILES = false
+const PRINT_ROUTING_TABLE = false
+const PRINT_PONG  = true
+
 func main() {
 
 	//scanner := bufio.NewScanner(os.Stdin)
@@ -38,11 +43,15 @@ func main() {
 
 	for {
 		time.Sleep(10 * time.Second)
-		//fmt.Println("supernode")
-		//kadem.GetNetwork().GetMyRoutingTable().Print()
-		fmt.Println("^^^ID"+kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String()+"^^^FILES")
-		kademlia.ListFiles()
-		fmt.Println("*********************")
+		if(PRINT_ROUTING_TABLE) {
+			fmt.Println("supernode")
+			kadem.GetNetwork().GetMyRoutingTable().Print()
+		}
+		if(PRINT_FILES) {
+			fmt.Println("^^^ID" + kadem.GetNetwork().GetMyRoutingTable().GetMyContact().ID.String() + "^^^FILES")
+			kademlia.ListFiles()
+			fmt.Println("*********************")
+		}
 		//fmt.Println("^^^^^^^")
 	}
 
