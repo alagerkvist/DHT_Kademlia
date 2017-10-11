@@ -206,9 +206,15 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 		//fmt.Print("request: ")
 		//fmt.Println(request.contact)
 		if !isForNode {
-			responseChannel <- network.SendFindDataValue(targetId, request.contact)
+			select {
+				case responseChannel <- network.SendFindDataValue(targetId, request.contact):
+				case <-time.After(time.Second * 5): fmt.Println("Timeout Send Data")
+			}
 		} else {
-			responseChannel <- network.SendFindContactMessage(&targetId, request.contact)
+			select {
+				case	responseChannel <- network.SendFindContactMessage(&targetId, request.contact):
+				case <-time.After(time.Second * 3):fmt.Println("Timeout Send Contact")
+			}
 		}
 	}
 }

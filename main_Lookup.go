@@ -3,6 +3,8 @@ package main
 import (
 	"./kademlia"
 	"time"
+	"net"
+	"fmt"
 )
 
 func main() {
@@ -30,12 +32,14 @@ func main() {
 	}
 	time.Sleep(2 * time.Second)
 
-	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
-	kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
-	kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
+
+	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
+	//kademliaNodes[0].LookupContact(kademliaNodes[0].GetNetwork().GetMyRoutingTable().GetMyContact().ID)
+	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 
 	//kademliaNodes[0].Store("mainAppl.go")
-	time.Sleep(120 * time.Second)
+	//time.Sleep(120 * time.Second)
+
 	//kademliaNodes[0].Store("mainAppl.go")
 	//kademliaNodes[0].GetNetwork().GetMyRoutingTable().Print()
 	//kademliaNodes[0].Store("kademlia/routingtable.go")
