@@ -7,6 +7,7 @@ import (
 )
 
 
+const TIME_TO_CHECK_LAST_VISITED = 1
 
 /** StartRefreshManaging
 *	Check to refresh the buckets if needed each minute
@@ -22,13 +23,13 @@ func (kademlia *Kademlia) StartRefreshManaging(){
 	}
 
 	for{
-		time.Sleep(60 * time.Second)
+		time.Sleep(70 * time.Second)
 
 		fmt.Println("Check for refresh buckets")
 		for i:=0 ; i < IDLength * 8 ; i++{
 			buck = kademlia.network.myRoutingTable.buckets[i]
 
-			if time.Since(buck.lastTimeVisited).Hours() > 1 && buck.list.Len() > 0{
+			if time.Since(buck.lastTimeVisited).Minutes() > 1 && buck.list.Len() > 0{
 				random := rand.Intn(buck.list.Len())
 				for e := buck.list.Front() ; e != nil ; e = e.Next() {
 					if random == 0{
