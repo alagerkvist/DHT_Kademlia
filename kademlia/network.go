@@ -245,31 +245,41 @@ func (network *Network) processFindValue(protocolPackage *ProtocolPackage, remot
  */
 func (network *Network) Sender(marshaledObject []byte, address string, answerWanted bool) (*ProtocolPackage){
 
-	//fmt.Println("sender", address)
+	fmt.Println("sender", address)
 	p :=  make([]byte, packetSize)
 	//fmt.Println(marshaledObject)
 	//fmt.Println(string(marshaledObject))
-	conn, err := net.Dial("udp", address)
+	conn, err := net.DialTimeout("udp", address, time.Second * 2)
 
 	if err != nil {
-		//fmt.Printf("126 Some error %v", err)
+		fmt.Printf("126 Some error %v", err)
 		return nil
+	}else{
+		fmt.Printf("OK Send")
 	}
 	//fmt.Fprintf(conn, string(marshaledObject))
+	conn.SetWriteDeadline(time.Now().Add(time.Second * 2))
 	ansWrite , errorWrite := conn.Write(marshaledObject)
 
 	if errorWrite != nil {
 		fmt.Println(errorWrite)
 		return nil
+	}else{
+		fmt.Println("no error write")
 	}
 	fmt.Println(ansWrite)
 
-
-	fmt.Println("watting answer")
 	if answerWanted {
-		n, err := conn.Read(p)
-		fmt.Println("answer")
-		if err == nil {
+		conn.SetReadDeadline(time.Now().Add(time.Second * 2))
+		n, errRead := conn.Read(p)
+		if errRead != nil {
+			fmt.Println("errREad")
+			return nil
+		}else{
+			fmt.Println("OK")
+		}
+
+		if err == nil && errRead == nil {
 
 			unMarshalledResponse := &ProtocolPackage{}
 			err = proto.Unmarshal(p[:n], unMarshalledResponse)
@@ -296,8 +306,8 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 		} else {
 			fmt.Printf("175 Some error %v\n", err)
 		}
-		conn.Close()
 	}
+	conn.Close()
 	return nil
 }
 
@@ -403,7 +413,7 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
  */
 func (network *Network) SendFindContactMessage(findThisID *KademliaID, contact *Contact) Response{
 	result := network.marshalFindContact(findThisID, contact)
-
+	fmt.Println("findContact")
 	if result == nil{
 		return Response{nil, nil, contact, true}
 	}

@@ -86,12 +86,9 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{targetID, "", nil})
 	firstContacts := <- responseChannel
 
-	fmt.Println("OK2")
 	for i:=0 ; i<len(firstContacts) ; i++ {
 		nodesToCheck = append(nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
-
-	fmt.Println("OK3")
 	for i := 0 ; i < alpha ; i++ {
 		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive, isForNode)
 		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
@@ -99,9 +96,12 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 	}
 
 	for {
+
 		fmt.Println("Wait Responde")
+		Print(nodesToCheck)
 		newResponse := <- channelToReceive
 		fmt.Println("Get Responde")
+
 		if newResponse.error{
 			fmt.Println("Unreachable node")
 			kademlia.network.myRoutingTable.createTask(removeContact, nil, newResponse.contactedContact)
@@ -207,8 +207,8 @@ func(network *Network) workerFindData(requestsChannel chan Request, targetId Kad
 		if(request.endWork){
 			break
 		}
-		//fmt.Print("request: ")
-		//fmt.Println(request.contact)
+		fmt.Print("request: ")
+		fmt.Println(request.contact)
 		if !isForNode {
 			select {
 				case responseChannel <- network.SendFindDataValue(targetId, request.contact):

@@ -29,7 +29,7 @@ func (kademlia *Kademlia) StartRefreshManaging(){
 		for i:=0 ; i < IDLength * 8 ; i++{
 			buck = kademlia.network.myRoutingTable.buckets[i]
 
-			if time.Since(buck.lastTimeVisited).Minutes() > 1 && buck.list.Len() > 0{
+			if time.Since(buck.lastTimeVisited).Hours() > 1 && buck.list.Len() > 0{
 				random := rand.Intn(buck.list.Len())
 				for e := buck.list.Front() ; e != nil ; e = e.Next() {
 					if random == 0{
