@@ -109,6 +109,7 @@ func processText(text string, kadem *kademlia.Kademlia){
 		processCommandRoutingTable(words, kadem)
 		break
 	case "lookup":
+		fmt.Println("Lookup ")
 		processCommandLookup(words, kadem)
 		break
 	case "file":

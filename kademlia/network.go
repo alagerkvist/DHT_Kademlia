@@ -256,11 +256,19 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 		return nil
 	}
 	//fmt.Fprintf(conn, string(marshaledObject))
-	conn.Write(marshaledObject)
-	//fmt.Println("watting answer")
+	ansWrite , errorWrite := conn.Write(marshaledObject)
+
+	if errorWrite != nil {
+		fmt.Println(errorWrite)
+		return nil
+	}
+	fmt.Println(ansWrite)
+
+
+	fmt.Println("watting answer")
 	if answerWanted {
 		n, err := conn.Read(p)
-		//fmt.Println("answer")
+		fmt.Println("answer")
 		if err == nil {
 
 			unMarshalledResponse := &ProtocolPackage{}
@@ -392,13 +400,14 @@ func (network *Network) marshalPing(contacts *Contact) (*ProtocolPackage) {
 		Address: proto.String(network.myRoutingTable.me.Address),
 		MessageSent: &typeOfMessage,
 	}
-
+	//fmt.Println("ok1")
 	data, err := proto.Marshal(marshalPackage)
 	//fmt.Println(marshalPackage)
 	//fmt.Println(data)
 	if err != nil {
 		log.Fatal("marshaling error: ", err)
 	}
+	//fmt.Println("ok2")
 	return network.Sender(data, contacts.Address, true)
 }
 

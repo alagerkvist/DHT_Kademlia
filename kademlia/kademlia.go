@@ -54,6 +54,7 @@ type Response struct{
 * OUTPUT: the k closest nodes from the target id
 */
 func (kademlia *Kademlia) LookupContact(targetId *KademliaID) []NodeToCheck{
+	fmt.Println("Perform routing contact")
 	return kademlia.Lookup(targetId, true)
 }
 
@@ -85,10 +86,12 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 	kademlia.network.myRoutingTable.createTask(lookUpContact, responseChannel, &Contact{targetID, "", nil})
 	firstContacts := <- responseChannel
 
+	fmt.Println("OK2")
 	for i:=0 ; i<len(firstContacts) ; i++ {
 		nodesToCheck = append(nodesToCheck, NodeToCheck{&firstContacts[i], false})
 	}
 
+	fmt.Println("OK3")
 	for i := 0 ; i < alpha ; i++ {
 		go kademlia.network.workerFindData(channelToSendRequest, *targetID, channelToReceive, isForNode)
 		channelToSendRequest <- Request{nodesToCheck[i].contact, false}
@@ -96,8 +99,9 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 	}
 
 	for {
+		fmt.Println("Wait Responde")
 		newResponse := <- channelToReceive
-
+		fmt.Println("Get Responde")
 		if newResponse.error{
 			fmt.Println("Unreachable node")
 			kademlia.network.myRoutingTable.createTask(removeContact, nil, newResponse.contactedContact)
@@ -181,7 +185,7 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 /** SendEndWork
 * PARAM: channelToSendRequest: the channel to send request
 		 nb: the of thread to finish
-* Say to the worker that they can't stop waiting for request
+* Say to the worker that they can stop waiting for request
 */
 func sendEndWork(channelToSendRequest chan Request, nb int){
 	for i := 0 ; i < alpha ; i++{
