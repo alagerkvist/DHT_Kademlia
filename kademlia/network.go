@@ -277,22 +277,6 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 			newContact.CalcDistance(network.myRoutingTable.me.ID)
 			network.myRoutingTable.createTask(addContact, nil, newContact)
 
-			switch unMarshalledResponse.GetMessageSent() {
-			case ProtocolPackage_PING:
-				//fmt.Printf("Ping")
-				break;
-			case ProtocolPackage_STORE:
-				//fmt.Printf("store")
-				break;
-			case ProtocolPackage_FINDNODE:
-				//fmt.Printf("find node")
-				break;
-			case ProtocolPackage_FINDVALUE:
-				//fmt.Printf("find value")
-				break;
-
-			}
-
 			if err != nil {
 				log.Fatal("298: unmarshaling error: ", err)
 			}
