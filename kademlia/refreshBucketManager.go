@@ -32,7 +32,7 @@ func (kademlia *Kademlia) StartRefreshManaging(){
 				random := rand.Intn(buck.list.Len())
 				for e := buck.list.Front() ; e != nil ; e = e.Next() {
 					if random == 0{
-						fmt.Println("\nProcess refresh of bucket %d\n", i)
+						fmt.Println("\nProcess refresh of bucket \n", 160- i)
 						kademlia.LookupContact(e.Value.(Contact).ID)
 						break
 					}
