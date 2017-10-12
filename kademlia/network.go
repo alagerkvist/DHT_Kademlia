@@ -254,29 +254,22 @@ func (network *Network) Sender(marshaledObject []byte, address string, answerWan
 	if err != nil {
 		fmt.Printf("126 Some error %v", err)
 		return nil
-	}else{
-		fmt.Printf("OK Send")
 	}
 	//fmt.Fprintf(conn, string(marshaledObject))
 	conn.SetWriteDeadline(time.Now().Add(time.Second * 2))
 	ansWrite , errorWrite := conn.Write(marshaledObject)
 
 	if errorWrite != nil {
-		fmt.Println(errorWrite)
 		return nil
-	}else{
-		fmt.Println("no error write")
 	}
+
 	fmt.Println(ansWrite)
 
 	if answerWanted {
 		conn.SetReadDeadline(time.Now().Add(time.Second * 2))
 		n, errRead := conn.Read(p)
 		if errRead != nil {
-			fmt.Println("errREad")
 			return nil
-		}else{
-			fmt.Println("OK")
 		}
 
 		if err == nil && errRead == nil {

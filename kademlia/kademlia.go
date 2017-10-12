@@ -97,24 +97,19 @@ func (kademlia *Kademlia) Lookup(targetID *KademliaID, isForNode bool) []NodeToC
 
 	for {
 
-		fmt.Println("Wait Responde")
-		Print(nodesToCheck)
 		newResponse := <- channelToReceive
-		fmt.Println("Get Responde")
 
 		if newResponse.error{
 			fmt.Println("Unreachable node")
 			kademlia.network.myRoutingTable.createTask(removeContact, nil, newResponse.contactedContact)
 
 		} else if !isForNode && newResponse.newContacts == nil{
-			fmt.Println("response: " + *newResponse.data)
 			contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
 			kademlia.network.FileManager.CheckAndStore(targetID.String(), *newResponse.data)
 
 			for ; countEndThread + 1 < alpha; countEndThread++{
 				//Get the last responses and check if they have the file
 				newResponse := <- channelToReceive
-				fmt.Println(newResponse)
 				if newResponse.newContacts == nil{
 					contactWithFiles = append(contactWithFiles, *newResponse.contactedContact)
 				}

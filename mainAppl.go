@@ -144,7 +144,12 @@ func processCommandPing(words []string, kadem *kademlia.Kademlia){
 
 func takeName(words []string) string{
 	if(len(words) > 2) {
-		return strings.Split(words[2], "=")[1]
+		splitWords := strings.Split(words[2], "=")
+		if(len(splitWords) > 1) {
+			return strings.Split(words[2], "=")[1]
+		} else {
+			return ""
+		}
 	}
 	return ""
 }
